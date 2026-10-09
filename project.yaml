@@ -14,7 +14,7 @@ actions:
         cohort: output/1-extract/extract_covid_wave_1.arrow
 
   prepare_covid_wave_1:
-    run: r:v2 analysis/2-prepare/prepare.R covid_wave_1
+    run: r:v3 analysis/2-prepare/prepare.R covid_wave_1
     needs: [extract_covid_wave_1]
     outputs:
       highly_sensitive:
@@ -23,7 +23,7 @@ actions:
         txt: output/2-prepare/prepare_covid_wave_1/*.txt
 
   report_covid_wave_1:
-    run: r:v2 analysis/3-report/report_cohort.R covid_wave_1
+    run: r:v3 analysis/3-report/report_cohort.R covid_wave_1
     needs: [prepare_covid_wave_1]
     outputs:
       moderately_sensitive:
@@ -44,7 +44,7 @@ actions:
         cohort: output/1-extract/extract_covid_ba1_ba2.arrow
 
   prepare_covid_ba1_ba2:
-    run: r:v2 analysis/2-prepare/prepare.R covid_ba1_ba2
+    run: r:v3 analysis/2-prepare/prepare.R covid_ba1_ba2
     needs: [extract_covid_ba1_ba2]
     outputs:
       highly_sensitive:
@@ -53,7 +53,7 @@ actions:
         txt: output/2-prepare/prepare_covid_ba1_ba2/*.txt
 
   report_covid_ba1_ba2:
-    run: r:v2 analysis/3-report/report_cohort.R covid_ba1_ba2
+    run: r:v3 analysis/3-report/report_cohort.R covid_ba1_ba2
     needs: [prepare_covid_ba1_ba2]
     outputs:
       moderately_sensitive:
@@ -74,7 +74,7 @@ actions:
         cohort: output/1-extract/extract_covid_jn1.arrow
 
   prepare_covid_jn1:
-    run: r:v2 analysis/2-prepare/prepare.R covid_jn1
+    run: r:v3 analysis/2-prepare/prepare.R covid_jn1
     needs: [extract_covid_jn1]
     outputs:
       highly_sensitive:
@@ -83,7 +83,7 @@ actions:
         txt: output/2-prepare/prepare_covid_jn1/*.txt
 
   report_covid_jn1:
-    run: r:v2 analysis/3-report/report_cohort.R covid_jn1
+    run: r:v3 analysis/3-report/report_cohort.R covid_jn1
     needs: [prepare_covid_jn1]
     outputs:
       moderately_sensitive:
@@ -104,7 +104,7 @@ actions:
         cohort: output/1-extract/extract_covid_2025_26.arrow
 
   prepare_covid_2025_26:
-    run: r:v2 analysis/2-prepare/prepare.R covid_2025_26
+    run: r:v3 analysis/2-prepare/prepare.R covid_2025_26
     needs: [extract_covid_2025_26]
     outputs:
       highly_sensitive:
@@ -113,7 +113,7 @@ actions:
         txt: output/2-prepare/prepare_covid_2025_26/*.txt
 
   report_covid_2025_26:
-    run: r:v2 analysis/3-report/report_cohort.R covid_2025_26
+    run: r:v3 analysis/3-report/report_cohort.R covid_2025_26
     needs: [prepare_covid_2025_26]
     outputs:
       moderately_sensitive:
@@ -134,7 +134,7 @@ actions:
         cohort: output/1-extract/extract_flu_2023_24.arrow
 
   prepare_flu_2023_24:
-    run: r:v2 analysis/2-prepare/prepare.R flu_2023_24
+    run: r:v3 analysis/2-prepare/prepare.R flu_2023_24
     needs: [extract_flu_2023_24]
     outputs:
       highly_sensitive:
@@ -143,7 +143,7 @@ actions:
         txt: output/2-prepare/prepare_flu_2023_24/*.txt
 
   report_flu_2023_24:
-    run: r:v2 analysis/3-report/report_cohort.R flu_2023_24
+    run: r:v3 analysis/3-report/report_cohort.R flu_2023_24
     needs: [prepare_flu_2023_24]
     outputs:
       moderately_sensitive:
@@ -164,7 +164,7 @@ actions:
         cohort: output/1-extract/extract_flu_2024_25.arrow
 
   prepare_flu_2024_25:
-    run: r:v2 analysis/2-prepare/prepare.R flu_2024_25
+    run: r:v3 analysis/2-prepare/prepare.R flu_2024_25
     needs: [extract_flu_2024_25]
     outputs:
       highly_sensitive:
@@ -173,7 +173,7 @@ actions:
         txt: output/2-prepare/prepare_flu_2024_25/*.txt
 
   report_flu_2024_25:
-    run: r:v2 analysis/3-report/report_cohort.R flu_2024_25
+    run: r:v3 analysis/3-report/report_cohort.R flu_2024_25
     needs: [prepare_flu_2024_25]
     outputs:
       moderately_sensitive:
@@ -194,7 +194,7 @@ actions:
         cohort: output/1-extract/extract_flu_2025_26.arrow
 
   prepare_flu_2025_26:
-    run: r:v2 analysis/2-prepare/prepare.R flu_2025_26
+    run: r:v3 analysis/2-prepare/prepare.R flu_2025_26
     needs: [extract_flu_2025_26]
     outputs:
       highly_sensitive:
@@ -203,7 +203,7 @@ actions:
         txt: output/2-prepare/prepare_flu_2025_26/*.txt
 
   report_flu_2025_26:
-    run: r:v2 analysis/3-report/report_cohort.R flu_2025_26
+    run: r:v3 analysis/3-report/report_cohort.R flu_2025_26
     needs: [prepare_flu_2025_26]
     outputs:
       moderately_sensitive:
@@ -224,7 +224,7 @@ actions:
         cohort: output/1-extract/extract_rsv_2023_24.arrow
 
   prepare_rsv_2023_24:
-    run: r:v2 analysis/2-prepare/prepare.R rsv_2023_24
+    run: r:v3 analysis/2-prepare/prepare.R rsv_2023_24
     needs: [extract_rsv_2023_24]
     outputs:
       highly_sensitive:
@@ -233,7 +233,7 @@ actions:
         txt: output/2-prepare/prepare_rsv_2023_24/*.txt
 
   report_rsv_2023_24:
-    run: r:v2 analysis/3-report/report_cohort.R rsv_2023_24
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2023_24
     needs: [prepare_rsv_2023_24]
     outputs:
       moderately_sensitive:
@@ -254,7 +254,7 @@ actions:
         cohort: output/1-extract/extract_rsv_2024_25.arrow
 
   prepare_rsv_2024_25:
-    run: r:v2 analysis/2-prepare/prepare.R rsv_2024_25
+    run: r:v3 analysis/2-prepare/prepare.R rsv_2024_25
     needs: [extract_rsv_2024_25]
     outputs:
       highly_sensitive:
@@ -263,7 +263,7 @@ actions:
         txt: output/2-prepare/prepare_rsv_2024_25/*.txt
 
   report_rsv_2024_25:
-    run: r:v2 analysis/3-report/report_cohort.R rsv_2024_25
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2024_25
     needs: [prepare_rsv_2024_25]
     outputs:
       moderately_sensitive:
@@ -284,7 +284,7 @@ actions:
         cohort: output/1-extract/extract_rsv_2025_26.arrow
 
   prepare_rsv_2025_26:
-    run: r:v2 analysis/2-prepare/prepare.R rsv_2025_26
+    run: r:v3 analysis/2-prepare/prepare.R rsv_2025_26
     needs: [extract_rsv_2025_26]
     outputs:
       highly_sensitive:
@@ -293,7 +293,7 @@ actions:
         txt: output/2-prepare/prepare_rsv_2025_26/*.txt
 
   report_rsv_2025_26:
-    run: r:v2 analysis/3-report/report_cohort.R rsv_2025_26
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2025_26
     needs: [prepare_rsv_2025_26]
     outputs:
       moderately_sensitive:
