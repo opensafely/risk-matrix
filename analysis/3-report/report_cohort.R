@@ -254,9 +254,9 @@ km_estimates <- function(data, group_name1, group_name2, event_name, event_time,
 #   km_estimates, data = data_prepared, event_name = "vax", event_time = "vax_time", event_indicator = "vax_indicator", resolution = temporal_resolution_km
 # )
 # km_estimates_vax("all", "all")
-# km_estimates_vax("all", "ageband4")
-# km_estimates_vax("ageband4", "all")
-# km_estimates_vax("ageband4", "sex")
+# km_estimates_vax("all", "ageband6")
+# km_estimates_vax("ageband6", "all")
+# km_estimates_vax("ageband6", "sex")
 
 ## Function to get km estimates over all subgroup combinations ----
 
@@ -324,7 +324,7 @@ km_estimates_vax_table <- get_all_km_estimates(data = data_prepared, event_name 
 km_estimates_vax_alive_table <- get_all_km_estimates(filter(data_prepared, alive_and_registered), "vax_alive", event_time = "vax_time", event_indicator = "vax_indicator")
 
 # consider raw KM plots for disease burden too
-# km_estimates_covid_admitted_table <- get_all_km_estimates(data = data_prepared, event_name = "covid_admitted", event_time = "covid_admitted_time", event_indicator = "covid_admitted_indicator")
+# km_estimates_admitted_table <- get_all_km_estimates(data = data_prepared, event_name = "admitted", event_time = "admitted_time", event_indicator = "admitted_indicator")
 
 
 # km_estimates_vax_table |>
@@ -412,8 +412,8 @@ walk2(
 
 # list of reference categories, which overwrites default reference category if needed
 contrasts_reference_levels <- list(
-  ageband4 = "65-74",
-  ageband13 = "65-69"
+  ageband6 = "65-84",
+  ageband18 = "65-69"
 )
 
 ## Function to output HRs and IRRs for disease burden comparing different subgroups ----
@@ -431,7 +431,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
     poisson_formula <- as.formula(glue("event_indicator ~ {subgroup} + sex + ns(age, 3)"))
 
     # use age-splines unless age is the subgroup of interest
-    if (subgroup %in% c("ageband4", "ageband13", "age_group")) {
+    if (subgroup %in% c("ageband6", "ageband18", "age_group")) {
       poisson_formula <- as.formula(glue("event_indicator ~ {subgroup} + sex"))
     }
 
@@ -580,7 +580,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
   gc()
 }
 
-# adjusted_estimates(data_prepared, "ageband4", "covid_admitted_time", "covid_admitted_indicator")
+# adjusted_estimates(data_prepared, "ageband6", "admitted_time", "admitted_indicator")
 
 #################################################################################################################
 # 3. Comparative analyses
@@ -705,7 +705,7 @@ get_all_estimates(data_prepared, "disease_death", "disease_death_time", "disease
 # }
 #
 #
-# los_estimates(data_prepared, "sex", "covid_admitted_los")
+# los_estimates(data_prepared, "sex", "admitted_los")
 #
 # ## function to get LoS across all group combinations ----
 # # for a given los outcome, loop over all groups combinations, obtaining los summaries for each using los_estimates function, and combining into one file
@@ -749,4 +749,4 @@ get_all_estimates(data_prepared, "disease_death", "disease_death_time", "disease
 # cat("## Get all LOS values for burden", "\n")
 # ## _______________________________________________________________________________________
 #
-# get_all_los_estimates(data_prepared, "covid_admitted", "covid_admitted_los")
+# get_all_los_estimates(data_prepared, "admitted", "admitted_los")

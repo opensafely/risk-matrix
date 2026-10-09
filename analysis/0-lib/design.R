@@ -330,16 +330,18 @@ standardise_demographic_characteristics <-
 
     ## --VARIABLES--
     ## demographics
-    ageband4 = cut(
+    ageband7 = cut(
       age,
-      breaks = c(-Inf, 12, 50, 65, 75, 105, Inf),
-      labels = c("under 12", "12-49", "50-64", "65-74", "75-104", "105+"), # under 12 and 105+ should be excluded in analysis but include here to ensure nobody slipped through the net
+      breaks = c(-Inf, 5, 25, 45, 65, 85, 105, Inf),
+      labels = c("under 5", "5-24", "25-44", "45-64", "65-84", "85-104", "105+"), # under 12 and 105+ should be excluded in analysis but include here to ensure nobody slipped through the net
       right = FALSE
     ),
-    ageband13 = cut(
+    ageband18 = cut(
       age,
-      breaks = c(-Inf, 12, 18, 30, 40, 50, 55, 60, 65, 70, 75, 80, 85, 90, 105, Inf),
-      labels = c("under 12", "12-17", "18-29", "30-39", "40-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "90-104", "105+"), # under 12 and 105+ should be excluded in analysis but include here to ensure nobody slipped through the net
+      breaks = c(-Inf, 1, 2, 5, 15, 25, 35, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 105, Inf),
+      labels = c("under 1", "1","2-4", "5-14", "15-24", "25-34", "35-44",
+      "45-49", "50-54", "55-59", "60-64", "65-69", "70-74",
+      "75-79", "80-84", "85-89", "90-104", "105+"), # 105+ should be excluded in analysis but include here to ensure nobody slipped through the net
       right = FALSE
     ),
     region = fct_collapse(
@@ -406,10 +408,10 @@ level1_group <- c(
   "all",
 
   # level 1B (age4)
-  "ageband4" #,
+  "ageband6" #,
 
   # # level 1C (age13)
-  # "ageband13",
+  # "ageband18",
 
   # # Level 1D (eligibility)
   # "any_eligibility",
@@ -436,8 +438,8 @@ level2_group <- c(
   "all",
 
   # sociodemographic subgroups
-  "ageband4",
-  "ageband13",
+  "ageband6",
+  "ageband18",
   "sex",
   "ethnicity5",
   "ethnicity16",
@@ -477,8 +479,8 @@ level_combos <-
   ) |>
   filter(
     (group1 == group2) %in% c(FALSE, NA) | (group1 == "all"),
-    !((group1 %in% c("ageband4", "ageband13")) & (group2 %in% c("ageband4", "ageband13"))),
-    !((group1 %in% c("age_above_eligiblity_threshold", "clinical_priority_only")) & (group2 %in% c("ageband4", "ageband13"))),
+    !((group1 %in% c("ageband6", "ageband18")) & (group2 %in% c("ageband6", "ageband18"))),
+    !((group1 %in% c("age_above_eligiblity_threshold", "clinical_priority_only")) & (group2 %in% c("ageband6", "ageband18"))),
     !((group1 %in% c("clinical_priority_only")) & (group2 %in% c("primis_atrisk"))),
   )
 

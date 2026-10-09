@@ -76,9 +76,12 @@ eligibility_age = patients.age_on(age_calculation_date)
 
 dataset.define_population(
     registered
-    & (registered_start_date <= (cohort_start_date - weeks(12)))
+    &  (
+        (eligibility_age < 1)
+        | (registered_start_date <= (cohort_start_date - weeks(12)))
+    )
     & alive
-    & (eligibility_age >= 12)
+    & (eligibility_age >= 0)
     & (eligibility_age <= 104)
     & patients.sex.is_in(["male", "female"])
 )
