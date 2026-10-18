@@ -174,6 +174,18 @@ for (cohort_id in cohort_ids) {
     primis_atrisk = bn_node(
       ~ crd | chd | ckd | cld | cns | learndis | diabetes | immunosuppressed | asplenia | severe_obesity | smi,
     ),
+    primis_atrisk_count = bn_node(
+      ~ crd + chd + ckd + cld + (cns | learndis) + diabetes +
+      immunosuppressed + asplenia + severe_obesity + smi
+    ),
+    primis_atrisk_count_fct = bn_node(
+      ~ cut(
+      primis_atrisk_count,
+      breaks = c(0, 1, 2, 3, 4, Inf),
+      labels = c("0", "1", "2", "3", "4+"),
+      right = FALSE
+      )
+    ),
     # extended subgroups
     rrt_cat = bn_node(
       variable_formula = ~ rfactor(n = ..n, levels = c(
