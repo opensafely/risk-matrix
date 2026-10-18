@@ -121,7 +121,12 @@ primis-covid19-vacc-uptake/reside_cod/v2.5
 # Outcomes
 
 # flu
+opensafely/influenza-identification-primary-care/2b370a92/
 opensafely/influenza-identification-secondary-care/7d33be15
 
 # rsv 
+opensafely/rsv-identification-primary-care/47b6884f/
 opensafely/rsv-identification-secondary-care/5ebecaf4
+
+# covid
+opensafely/covid-19-identification-primary-care/2f7731a6/
