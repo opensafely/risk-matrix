@@ -254,9 +254,9 @@ km_estimates <- function(data, group_name1, group_name2, event_name, event_time,
 #   km_estimates, data = data_prepared, event_name = "vax", event_time = "vax_time", event_indicator = "vax_indicator", resolution = temporal_resolution_km
 # )
 # km_estimates_vax("all", "all")
-# km_estimates_vax("all", "ageband6")
-# km_estimates_vax("ageband6", "all")
-# km_estimates_vax("ageband6", "sex")
+# km_estimates_vax("all", "ageband7")
+# km_estimates_vax("ageband7", "all")
+# km_estimates_vax("ageband7", "sex")
 
 ## Function to get km estimates over all subgroup combinations ----
 
@@ -413,7 +413,7 @@ walk2(
 
 # list of reference categories, which overwrites default reference category if needed
 contrasts_reference_levels <- list(
-  ageband6 = "65-84",
+  ageband7 = "65-84",
   ageband18 = "65-69"
 )
 
@@ -432,7 +432,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
     poisson_formula <- as.formula(glue("event_indicator ~ {subgroup} + sex + ns(age, 3)"))
 
     # use age-splines unless age is the subgroup of interest
-    if (subgroup %in% c("ageband6", "ageband18", "age_group")) {
+    if (subgroup %in% c("ageband7", "ageband18", "age_group")) {
       poisson_formula <- as.formula(glue("event_indicator ~ {subgroup} + sex"))
     }
 
@@ -581,7 +581,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
   gc()
 }
 
-# adjusted_estimates(data_prepared, "ageband6", "admitted_time", "admitted_indicator")
+# adjusted_estimates(data_prepared, "ageband7", "admitted_time", "admitted_indicator")
 
 #################################################################################################################
 # 3. Comparative analyses

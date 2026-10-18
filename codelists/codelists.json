@@ -341,6 +341,12 @@
       "url": "https://www.opencodelists.org/codelist/opensafely/rsv-identification-secondary-care/5ebecaf4/",
       "downloaded_at": "2026-06-19 17:39:13.327786Z",
       "sha": "ab9f9712939394b9b8f6a261ab3afb2d9f94daa4"
+    },
+    "opensafely-covid-19-identification-primary-care.csv": {
+      "id": "opensafely/covid-19-identification-primary-care/2f7731a6",
+      "url": "https://www.opencodelists.org/codelist/opensafely/covid-19-identification-primary-care/2f7731a6/",
+      "downloaded_at": "2026-10-18 18:10:02.603434+00:00Z",
+      "sha": "7f7b874001887d5a2649685484f5b0240b9bfc35"
     }
   }
 }

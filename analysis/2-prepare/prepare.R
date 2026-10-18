@@ -131,7 +131,7 @@ data_prepared <-
       !is.na(first_vax_date_after_start_date),
    
     # primary care outcome: admitted
-    primary_care_date = as.integer(
+    primary_care_time = as.integer(
       pmin(primary_care_date, death_date, censor_date, na.rm = TRUE) -
         cohort_start_date
     ) + 1L,

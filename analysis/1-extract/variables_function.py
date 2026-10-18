@@ -502,11 +502,11 @@ def extended_subgroups(dataset, index_date, var_name_suffix=""):
 
 def demographic_variables(dataset, index_date, var_name_suffix=""):
     registration = practice_registrations.for_patient_on(index_date)
-    # dataset.add_column(f"sex{var_name_suffix}", patients.sex)
+    dataset.add_column(f"sex{var_name_suffix}", patients.sex)
     dataset.add_column(f"age{var_name_suffix}", patients.age_on(index_date - days(1)))
     # dataset.add_column(f"ethnicity5{var_name_suffix}", ethnicity5(index_date))
     # dataset.add_column(f"ethnicity16{var_name_suffix}", ethnicity16(index_date))
-    dataset.add_column(f"region{var_name_suffix}", registration.practice_nuts1_region_name)
+    # dataset.add_column(f"region{var_name_suffix}", registration.practice_nuts1_region_name)
     # dataset.add_column(f"stp{var_name_suffix}", registration.practice_stp)
     # dataset.add_column(f"imd{var_name_suffix}", addresses.for_patient_on(index_date).imd_rounded)
     dataset.add_column(f"carehome_status{var_name_suffix}", carehome_status(index_date))
@@ -655,13 +655,12 @@ def disease_death_date(disease_icd10_codelist, cohort_start_date, cohort_end_dat
 
     return disease_death_date
 
-def add_primary_care_outcomes(dataset, disease_icd10_codelist, cohort_start_date, cohort_end_date, var_name_suffix=""):
+def add_primary_care_outcomes(dataset, disease_snomed_codelist, cohort_start_date, cohort_end_date, var_name_suffix=""):
 
     dataset.add_column(f"primary_care_date{var_name_suffix}", primary_care_date(disease_snomed_codelist, cohort_start_date, cohort_end_date))    
 
 def add_sev_outcomes(dataset, disease_icd10_codelist, cohort_start_date, cohort_end_date, var_name_suffix=""):
-
-    dataset.add_column(f"primary_care_date{var_name_suffix}", primary_care_date(disease_snomed_codelist, cohort_start_date, cohort_end_date))    
+  
     dataset.add_column(f"admitted_date{var_name_suffix}", admitted_date(disease_icd10_codelist, cohort_start_date, cohort_end_date))
     dataset.add_column(f"admitted_primary_date{var_name_suffix}", admitted_primary_date(disease_icd10_codelist, cohort_start_date, cohort_end_date))
     dataset.add_column(f"disease_death_date{var_name_suffix}", disease_death_date(disease_icd10_codelist, cohort_start_date, cohort_end_date))

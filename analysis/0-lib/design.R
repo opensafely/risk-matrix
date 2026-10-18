@@ -354,13 +354,13 @@ standardise_demographic_characteristics <-
     #   `South East` = "South East",
     #   `South West` = "South West"
     # ),
-    imd_quintile = cut(
-      imd,
-      breaks = c(0, 32844 * (1:5) / 5),
-      labels = c("1 (most deprived)", "2", "3", "4", "5 (least deprived)"),
-      include.lowest = TRUE,
-      right = FALSE
-    ),
+    # imd_quintile = cut(
+    #   imd,
+    #   breaks = c(0, 32844 * (1:5) / 5),
+    #   labels = c("1 (most deprived)", "2", "3", "4", "5 (least deprived)"),
+    #   include.lowest = TRUE,
+    #   right = FALSE
+    # ),
   )
 
 ## CKD-RRT classification
@@ -412,7 +412,7 @@ level1_group <- c(
   "all",
 
   # level 1B (age4)
-  "ageband6" #,
+  "ageband7" #,
 
   # # level 1C (age13)
   # "ageband18",
@@ -422,9 +422,9 @@ level2_group <- c(
   "all",
 
   # sociodemographic subgroups
-  "ageband6",
+  "ageband7",
   "ageband18",
-  # "sex",
+  "sex",
   # "ethnicity5",
   # "ethnicity16",
   # "region",
@@ -464,7 +464,7 @@ level_combos <-
   ) |>
   filter(
     (group1 == group2) %in% c(FALSE, NA) | (group1 == "all"),
-    !((group1 %in% c("ageband6", "ageband18")) & (group2 %in% c("ageband6", "ageband18"))),
+    !((group1 %in% c("ageband7", "ageband18")) & (group2 %in% c("ageband7", "ageband18"))),
   )
 
 # Local run flag ----

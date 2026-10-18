@@ -6,7 +6,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator) {
   # use age-splines unless age is the subgroup of interest
 
   poisson_formula <- as.formula(glue("event_indicator ~ {subgroup} + sex + ns(age, 3)"))
-  if (subgroup == "ageband6") poisson_formula <- as.formula(glue("event_indicator ~ ageband6 + sex"))
+  if (subgroup == "ageband7") poisson_formula <- as.formula(glue("event_indicator ~ ageband7 + sex"))
   if (subgroup == "ageband18") poisson_formula <- as.formula(glue("event_indicator ~ ageband18 + sex"))
 
   # prepare dataset

@@ -75,9 +75,9 @@ for (cohort_id in cohort_ids) {
 
   sim_list <- lst(
   # demographics
-  # sex = bn_node(
-  #   ~ rfactor(n = ..n, levels = c("female", "male", "intersex", "unknown"), p = c(0.51, 0.49, 0, 0))
-  # ),
+  sex = bn_node(
+    ~ rfactor(n = ..n, levels = c("female", "male", "intersex", "unknown"), p = c(0.51, 0.49, 0, 0))
+  ),
 
   age = bn_node(
     ~ as.integer(rnormt(n = ..n, mean = 60, sd = 14, range = c(12, 104)))
