@@ -75,63 +75,63 @@ for (cohort_id in cohort_ids) {
 
   sim_list <- lst(
   # demographics
-  sex = bn_node(
-    ~ rfactor(n = ..n, levels = c("female", "male", "intersex", "unknown"), p = c(0.51, 0.49, 0, 0))
-  ),
+  # sex = bn_node(
+  #   ~ rfactor(n = ..n, levels = c("female", "male", "intersex", "unknown"), p = c(0.51, 0.49, 0, 0))
+  # ),
 
   age = bn_node(
     ~ as.integer(rnormt(n = ..n, mean = 60, sd = 14, range = c(12, 104)))
   ),
 
-  ethnicity5 = bn_node(variable_formula = ~ ethnicity_16_to_5(ethnicity16), needs = "ethnicity16"),
-  ethnicity16 = bn_node(
-    variable_formula = ~ rfactor(
-      n = ..n,
-      levels = c(
-        "White - British",
-        "White - Irish",
-        "White - Any other White background",
-        "Mixed - White and Black Caribbean",
-        "Mixed - White and Black African",
-        "Mixed - White and Asian",
-        "Mixed - Any other mixed background",
-        "Asian or Asian British - Indian",
-        "Asian or Asian British - Pakistani",
-        "Asian or Asian British - Bangladeshi",
-        "Asian or Asian British - Any other Asian background",
-        "Black or Black British - Caribbean",
-        "Black or Black British - African",
-        "Black or Black British - Any other Black background",
-        "Other Ethnic Groups - Chinese",
-        "Other Ethnic Groups - Any other ethnic group"
-      ),
-      p = c(
-        0.5, 0.05, 0.05, # White
-        0.025, 0.025, 0.025, 0.025, # Mixed
-        0.025, 0.025, 0.025, 0.025, # Asian
-        0.033, 0.033, 0.034, # Black
-        0.05, 0.05 # Other
-      )
-    ),
-    missing_rate = ~0.1,
-  ),
+  # ethnicity5 = bn_node(variable_formula = ~ ethnicity_16_to_5(ethnicity16), needs = "ethnicity16"),
+  # ethnicity16 = bn_node(
+  #   variable_formula = ~ rfactor(
+  #     n = ..n,
+  #     levels = c(
+  #       "White - British",
+  #       "White - Irish",
+  #       "White - Any other White background",
+  #       "Mixed - White and Black Caribbean",
+  #       "Mixed - White and Black African",
+  #       "Mixed - White and Asian",
+  #       "Mixed - Any other mixed background",
+  #       "Asian or Asian British - Indian",
+  #       "Asian or Asian British - Pakistani",
+  #       "Asian or Asian British - Bangladeshi",
+  #       "Asian or Asian British - Any other Asian background",
+  #       "Black or Black British - Caribbean",
+  #       "Black or Black British - African",
+  #       "Black or Black British - Any other Black background",
+  #       "Other Ethnic Groups - Chinese",
+  #       "Other Ethnic Groups - Any other ethnic group"
+  #     ),
+  #     p = c(
+  #       0.5, 0.05, 0.05, # White
+  #       0.025, 0.025, 0.025, 0.025, # Mixed
+  #       0.025, 0.025, 0.025, 0.025, # Asian
+  #       0.033, 0.033, 0.034, # Black
+  #       0.05, 0.05 # Other
+  #     )
+  #   ),
+  #   missing_rate = ~0.1,
+  # ),
 
-  region = bn_node(
-    variable_formula = ~ rfactor(n = ..n, levels = c(
-      "North East", "North West", "Yorkshire and The Humber",
-      "East Midlands", "West Midlands", "East",
-      "London", "South East", "South West"
-    ), p = c(0.2, 0.2, 0.3, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05))
-  ),
+  # region = bn_node(
+  #   variable_formula = ~ rfactor(n = ..n, levels = c(
+  #     "North East", "North West", "Yorkshire and The Humber",
+  #     "East Midlands", "West Midlands", "East",
+  #     "London", "South East", "South West"
+  #   ), p = c(0.2, 0.2, 0.3, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05))
+  # ),
 
-  stp = bn_node(
-    ~ factor(as.integer(runif(n = ..n, 1, 36)), levels = 1:36)
-  ),
+  # stp = bn_node(
+  #   ~ factor(as.integer(runif(n = ..n, 1, 36)), levels = 1:36)
+  # ),
 
-  imd = bn_node(
-    ~ as.integer(plyr::round_any(runif(n = ..n, 100, 32000), 100)),
-    missing_rate = ~0.05
-  ),
+  # imd = bn_node(
+  #   ~ as.integer(plyr::round_any(runif(n = ..n, 100, 32000), 100)),
+  #   missing_rate = ~0.05
+  # ),
 
   carehome_status = bn_node(
     ~ rbernoulli(n = ..n, p = if_else(age < 65, 0.01, 0.2)),

@@ -492,23 +492,23 @@ def extended_subgroups(dataset, index_date, var_name_suffix=""):
 # demographic variables
 ############################################################
 # Ethnicity
-def ethnicity5(index_date):
-    ethnicity5 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity5)
-    return ethnicity5
+# def ethnicity5(index_date):
+#     ethnicity5 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity5)
+#     return ethnicity5
 
-def ethnicity16(index_date):
-    ethnicity16 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity16)
-    return ethnicity16
+# def ethnicity16(index_date):
+#     ethnicity16 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity16)
+#     return ethnicity16
 
 def demographic_variables(dataset, index_date, var_name_suffix=""):
     registration = practice_registrations.for_patient_on(index_date)
-    dataset.add_column(f"sex{var_name_suffix}", patients.sex)
+    # dataset.add_column(f"sex{var_name_suffix}", patients.sex)
     dataset.add_column(f"age{var_name_suffix}", patients.age_on(index_date - days(1)))
-    dataset.add_column(f"ethnicity5{var_name_suffix}", ethnicity5(index_date))
-    dataset.add_column(f"ethnicity16{var_name_suffix}", ethnicity16(index_date))
+    # dataset.add_column(f"ethnicity5{var_name_suffix}", ethnicity5(index_date))
+    # dataset.add_column(f"ethnicity16{var_name_suffix}", ethnicity16(index_date))
     dataset.add_column(f"region{var_name_suffix}", registration.practice_nuts1_region_name)
-    dataset.add_column(f"stp{var_name_suffix}", registration.practice_stp)
-    dataset.add_column(f"imd{var_name_suffix}", addresses.for_patient_on(index_date).imd_rounded)
+    # dataset.add_column(f"stp{var_name_suffix}", registration.practice_stp)
+    # dataset.add_column(f"imd{var_name_suffix}", addresses.for_patient_on(index_date).imd_rounded)
     dataset.add_column(f"carehome_status{var_name_suffix}", carehome_status(index_date))
 
 

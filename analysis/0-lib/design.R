@@ -344,16 +344,16 @@ standardise_demographic_characteristics <-
       "75-79", "80-84", "85-89", "90-104", "105+"), # 105+ should be excluded in analysis but include here to ensure nobody slipped through the net
       right = FALSE
     ),
-    region = fct_collapse(
-      factor(region, ordered = FALSE),
-      `East of England` = "East",
-      `London` = "London",
-      `Midlands` = c("West Midlands", "East Midlands"),
-      `North East and Yorkshire` = c("Yorkshire and The Humber", "North East"),
-      `North West` = "North West",
-      `South East` = "South East",
-      `South West` = "South West"
-    ),
+    # region = fct_collapse(
+    #   factor(region, ordered = FALSE),
+    #   `East of England` = "East",
+    #   `London` = "London",
+    #   `Midlands` = c("West Midlands", "East Midlands"),
+    #   `North East and Yorkshire` = c("Yorkshire and The Humber", "North East"),
+    #   `North West` = "North West",
+    #   `South East` = "South East",
+    #   `South West` = "South West"
+    # ),
     imd_quintile = cut(
       imd,
       breaks = c(0, 32844 * (1:5) / 5),
@@ -416,26 +416,6 @@ level1_group <- c(
 
   # # level 1C (age13)
   # "ageband18",
-
-  # # Level 1D (eligibility)
-  # "any_eligibility",
-  # "age_above_eligiblity_threshold",
-  # "clinical_priority",
-  # "clinical_priority_only",
-  # "carehome_status",
-
-  # # Level 1E (clinical risk)
-  # "primis_atrisk",
-  # "crd",
-  # "chd",
-  # "ckd",
-  # "cld",
-  # "cns_learndis",
-  # "diabetes",
-  # "immunosuppressed",
-  # "asplenia",
-  # "severe_obesity",
-  # "smi"
 )
 
 level2_group <- c(
@@ -444,12 +424,12 @@ level2_group <- c(
   # sociodemographic subgroups
   "ageband6",
   "ageband18",
-  "sex",
-  "ethnicity5",
-  "ethnicity16",
-  "region",
-  "imd_quintile",
-  "carehome_status",
+  # "sex",
+  # "ethnicity5",
+  # "ethnicity16",
+  # "region",
+  # "imd_quintile",
+  # "carehome_status",
 
   # Core clinical risk subgroups
   "primis_atrisk",
@@ -485,8 +465,6 @@ level_combos <-
   filter(
     (group1 == group2) %in% c(FALSE, NA) | (group1 == "all"),
     !((group1 %in% c("ageband6", "ageband18")) & (group2 %in% c("ageband6", "ageband18"))),
-    !((group1 %in% c("age_above_eligiblity_threshold", "clinical_priority_only")) & (group2 %in% c("ageband6", "ageband18"))),
-    !((group1 %in% c("clinical_priority_only")) & (group2 %in% c("primis_atrisk"))),
   )
 
 # Local run flag ----
