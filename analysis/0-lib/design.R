@@ -453,6 +453,7 @@ level2_group <- c(
 
   # Core clinical risk subgroups
   "primis_atrisk",
+  "primis_atrisk_count_fct",
   "crd",
   "chd",
   "ckd",
