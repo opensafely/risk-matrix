@@ -129,6 +129,15 @@ data_prepared <-
     vax_indicator =
       first_vax_date_after_start_date <= pmin(death_date, censor_date, na.rm = TRUE) &
       !is.na(first_vax_date_after_start_date),
+   
+    # primary care outcome: admitted
+    primary_care_date = as.integer(
+      pmin(primary_care_date, death_date, censor_date, na.rm = TRUE) -
+        cohort_start_date
+    ) + 1L,
+    primary_care_indicator =
+      primary_care_date <= pmin(death_date, censor_date, na.rm = TRUE) &
+      !is.na(primary_care_date),
 
     # severe outcome: admitted
     admitted_time = as.integer(
@@ -202,6 +211,7 @@ data_prepared <-
 time_check <- data_prepared |>
   summarise(
     min_vax_time = min(vax_time, na.rm = TRUE),
+    min_primary_care_time = min(primary_care_time, na.rm = TRUE),
     min_admitted_time = min(admitted_time, na.rm = TRUE),
     min_admitted_primary_time = min(admitted_primary_time, na.rm = TRUE),
     min_disease_death_time = min(disease_death_time, na.rm = TRUE),
@@ -222,7 +232,7 @@ write_feather(
   fs::path(output_dir, glue("prepare_{cohort_id}.arrow"))
 )
 
-
+#TODO: check this for RSV / FLU
 vax_prod_table <- bind_rows(
   data_prepared |>
     transmute(

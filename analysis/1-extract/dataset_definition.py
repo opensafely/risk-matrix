@@ -108,18 +108,20 @@ dataset.death_date = ons_deaths.date
 # ------------------------------------------------------------------------------
 # Disease-specific variables: vaccination + outcomes
 # ------------------------------------------------------------------------------
-# TODO: add mild outcomes
 if target == "COVID-19":
     add_target_vaccines(dataset, ["SARS-2 CORONAVIRUS"], cohort_start_date, cohort_end_date)
-    add_target_sev_outcomes(dataset, codelists.covid_icd10, cohort_start_date, cohort_end_date)
+    add_primary_care_outcomes(dataset, codelists.covid_snomed_codelist, cohort_start_date, cohort_end_date)    
+    add_sev_outcomes(dataset, codelists.covid_icd10, cohort_start_date, cohort_end_date)
 
 elif target == "Influenza":
     add_target_vaccines(dataset, ["INFLUENZA"], cohort_start_date, cohort_end_date)
-    add_target_sev_outcomes(dataset, codelists.flu_icd10, cohort_start_date, cohort_end_date)
+    add_primary_care_outcomes(dataset, codelists.flu_narrow_snomed_codelist, cohort_start_date, cohort_end_date)  
+    add_sev_outcomes(dataset, codelists.flu_icd10, cohort_start_date, cohort_end_date)
 
 elif target == "RSV":
     add_target_vaccines(dataset, ["HUMAN RESPIRATORY SYNCYTIAL VIRUS"], cohort_start_date, cohort_end_date)
-    add_target_sev_outcomes(dataset, codelists.rsv_icd10, cohort_start_date, cohort_end_date)
+    add_primary_care_outcomes(dataset, codelists.rsv_narrow_snomed_codelist, cohort_start_date, cohort_end_date)      
+    add_sev_outcomes(dataset, codelists.rsv_icd10, cohort_start_date, cohort_end_date)
 
 #TODO: Zoster
 

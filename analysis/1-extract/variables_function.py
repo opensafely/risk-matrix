@@ -587,7 +587,21 @@ def add_target_vaccines(dataset, target_disease_values, cohort_start_date, cohor
     
 # Target disease
 ## Mild outcome
-# TODO: add 
+def primary_care_date(disease_snomed_codelist, cohort_start_date, cohort_end_date, where=True):
+
+    primary_care_date = (
+        clinical_events
+        .where(where)
+        .where(clinical_events.snomedct_code.is_in(disease_snomed_codelist))
+        .where(clinical_events.date.is_on_or_between(cohort_start_date, cohort_end_date))
+        .sort_by(clinical_events.date)
+        .first_for_patient()
+        .date
+    )
+
+    return primary_care_date
+
+
 # Severe outcomes
 def target_admissions(disease_icd10_codelist, cohort_start_date, cohort_end_date):
     
@@ -641,9 +655,13 @@ def disease_death_date(disease_icd10_codelist, cohort_start_date, cohort_end_dat
 
     return disease_death_date
 
+def add_primary_care_outcomes(dataset, disease_icd10_codelist, cohort_start_date, cohort_end_date, var_name_suffix=""):
 
-def add_target_sev_outcomes(dataset, disease_icd10_codelist, cohort_start_date, cohort_end_date, var_name_suffix=""):
-    
+    dataset.add_column(f"primary_care_date{var_name_suffix}", primary_care_date(disease_snomed_codelist, cohort_start_date, cohort_end_date))    
+
+def add_sev_outcomes(dataset, disease_icd10_codelist, cohort_start_date, cohort_end_date, var_name_suffix=""):
+
+    dataset.add_column(f"primary_care_date{var_name_suffix}", primary_care_date(disease_snomed_codelist, cohort_start_date, cohort_end_date))    
     dataset.add_column(f"admitted_date{var_name_suffix}", admitted_date(disease_icd10_codelist, cohort_start_date, cohort_end_date))
     dataset.add_column(f"admitted_primary_date{var_name_suffix}", admitted_primary_date(disease_icd10_codelist, cohort_start_date, cohort_end_date))
     dataset.add_column(f"disease_death_date{var_name_suffix}", disease_death_date(disease_icd10_codelist, cohort_start_date, cohort_end_date))

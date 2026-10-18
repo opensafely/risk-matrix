@@ -270,6 +270,11 @@ for (cohort_id in cohort_ids) {
     ~ rcat(n = ..n, c("prodA", "prodB"), c(0.5, 0.5)),
     needs = "first_vax_date_after_start_day"
   ),
+  # disease-specific primary care outcome
+  primary_care_day = bn_node(
+    ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 300)),
+    missing_rate = ~0.5
+  ),
   # disease-specific severe outcomes
   admitted_day = bn_node(
     ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 300)),

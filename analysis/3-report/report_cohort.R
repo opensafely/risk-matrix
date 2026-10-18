@@ -324,6 +324,7 @@ km_estimates_vax_table <- get_all_km_estimates(data = data_prepared, event_name 
 km_estimates_vax_alive_table <- get_all_km_estimates(filter(data_prepared, alive_and_registered), "vax_alive", event_time = "vax_time", event_indicator = "vax_indicator")
 
 # consider raw KM plots for disease burden too
+# km_estimates_primary_care_table <- get_all_km_estimates(data = data_prepared, event_name = "primary_care", event_time = "primary_care_time", event_indicator = "primary_care_indicator")
 # km_estimates_admitted_table <- get_all_km_estimates(data = data_prepared, event_name = "admitted", event_time = "admitted_time", event_indicator = "admitted_indicator")
 
 
@@ -659,7 +660,7 @@ get_all_estimates(
 )
 
 # IRR for burden, in the usual way
-#TODO: add here mild
+get_all_estimates(data_prepared, "primary_care", "primary_care_time", "primary_care_indicator")
 get_all_estimates(data_prepared, "admitted", "admitted_time", "admitted_indicator")
 get_all_estimates(data_prepared, "admitted_primary", "admitted_primary_time", "admitted_primary_indicator")
 get_all_estimates(data_prepared, "disease_death", "disease_death_time", "disease_death_indicator")

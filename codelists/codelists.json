@@ -318,11 +318,23 @@
       "downloaded_at": "2026-01-07 16:52:31.359052Z",
       "sha": "906a866473bd4c99a48ddb1d86c08986d228ba38"
     },
+    "opensafely-influenza-identification-primary-care.csv": {
+      "id": "opensafely/influenza-identification-primary-care/2b370a92",
+      "url": "https://www.opencodelists.org/codelist/opensafely/influenza-identification-primary-care/2b370a92/",
+      "downloaded_at": "2026-10-14 13:14:58.057286+00:00Z",
+      "sha": "eac1e41a22ca77f453969710e55a6a6322c82a56"
+    },
     "opensafely-influenza-identification-secondary-care.csv": {
       "id": "opensafely/influenza-identification-secondary-care/7d33be15",
       "url": "https://www.opencodelists.org/codelist/opensafely/influenza-identification-secondary-care/7d33be15/",
       "downloaded_at": "2026-06-19 17:39:13.237202Z",
       "sha": "29f102e6fd667e9ed466cbfc06c310d7d781991e"
+    },
+    "opensafely-rsv-identification-primary-care.csv": {
+      "id": "opensafely/rsv-identification-primary-care/47b6884f",
+      "url": "https://www.opencodelists.org/codelist/opensafely/rsv-identification-primary-care/47b6884f/",
+      "downloaded_at": "2026-10-14 13:14:58.344113+00:00Z",
+      "sha": "e0a6b548665f92602c8ed8ce6faf89b0285418cd"
     },
     "opensafely-rsv-identification-secondary-care.csv": {
       "id": "opensafely/rsv-identification-secondary-care/5ebecaf4",
