@@ -275,7 +275,7 @@ covid_snomed_codelist = codelist_from_csv(
 covid_icd10 = ["U071", "U072", "U109", "U075"]
 
 # Flu
-flu_snomed_narrow_codelist = codelist_from_csv(
+flu_narrow_snomed_codelist = codelist_from_csv(
   "codelists/opensafely-influenza-identification-primary-care.csv",
   column = "code",
 )
