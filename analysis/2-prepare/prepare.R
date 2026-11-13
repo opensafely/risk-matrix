@@ -33,8 +33,8 @@ cohort_value <- cohort_info$cohort[[1]]
 cohort_start_date_value <- cohort_info$cohort_start_date[[1]]
 cohort_end_date_value <- cohort_info$cohort_end_date[[1]]
 cohort_end_days_value <- cohort_info$cohort_end_days[[1]]
-age_threshold_value <- cohort_info$age_threshold[[1]]
-clinical_priority_value <- cohort_info$clinical_priority[[1]]
+#age_threshold_value <- cohort_info$age_threshold[[1]]
+#clinical_priority_value <- cohort_info$clinical_priority[[1]]
 
 output_dir <- here("output", "2-prepare", glue("prepare_{cohort_id}"))
 fs::dir_create(output_dir)
@@ -46,6 +46,10 @@ options(width = 200)
 data_extract <- read_feather(
   here("output", "1-extract", glue("extract_{cohort_id}.arrow"))
 )
+
+# data_extract <- read_feather(
+#   here("analysis", "1-extract", "dummy-data", glue("dummy_{cohort_id}.arrow"))
+# )
 
 capture.output(
   skimr::skim_without_charts(data_extract),
@@ -65,7 +69,7 @@ data_prepared <-
     cohort_start_date = cohort_start_date_value,
     cohort_end_date = cohort_end_date_value,
     cohort_end_days = cohort_end_days_value,
-    age_threshold = age_threshold_value,
+    #age_threshold = age_threshold_value,
 
     all = "All",
 
@@ -75,15 +79,15 @@ data_prepared <-
   mutate(
 
     # eligibility
-    age_above_eligibility_threshold = age >= age_threshold,
-
-    # used to choose if the at risk group is all clinical risk variables
-    # or just immunosuppressed people
-    clinical_priority = .data[[clinical_priority_value]],
-
-    clinical_priority_only = clinical_priority & !age_above_eligibility_threshold,
-
-    any_eligibility = age_above_eligibility_threshold | clinical_priority | carehome_status,
+    # age_above_eligibility_threshold = age >= age_threshold,
+    # 
+    # # used to choose if the at risk group is all clinical risk variables
+    # # or just immunosuppressed people
+    # clinical_priority = .data[[clinical_priority_value]],
+    # 
+    # clinical_priority_only = clinical_priority & !age_above_eligibility_threshold,
+    # 
+    # any_eligibility = age_above_eligibility_threshold | clinical_priority | carehome_status,
 
     # baseline vaccination history
     baseline_vax_status = case_when(
@@ -251,18 +255,22 @@ vax_prod_table <- bind_rows(
   filter(!is.na(date)) |>
   mutate(
     year = year(date),
-    period = case_when(
-      month(date) %in% 9:12 ~ paste0("Sep-Feb/", year(date)),
-      month(date) %in% 1:2  ~ paste0("Sep-Feb/", year(date) - 1),
-      month(date) %in% 3:8  ~ paste0("Feb-Aug/", year(date)),
-      TRUE ~ NA_character_
-    )
+    month_year = floor_date(date, "month")
+    # period = case_when(
+    #   month(date) %in% 9:12 ~ paste0("Sep-Feb/", year(date)),
+    #   month(date) %in% 1:2  ~ paste0("Sep-Feb/", year(date) - 1),
+    #   month(date) %in% 3:8  ~ paste0("Mar-Aug/", year(date)),
+    #   TRUE ~ NA_character_
+    # )
   ) |>
-  count(indicador, period, product, name = "n_round10") |>
+  count(indicador, month_year, product, name = "n_round10") |>
   mutate(
     n_round10 = round_any(n_round10, sdc_threshold
   )) |>
-  arrange(indicador, period, product)
+  arrange(indicador, month_year, product) %>%
+  mutate(
+    month_year = format(month_year, "%b %Y")
+  )
 
 write_csv(
   vax_prod_table,
