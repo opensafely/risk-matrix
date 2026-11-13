@@ -332,7 +332,7 @@ def has_cochlear_implant(index_date, where=True):
     date_cochlear_implant = last_prior_event(codelists.cochlear_implant, index_date).date
     # Removal codes relating to cochlear implant
     date_remove_cochlear_implant = last_prior_event(codelists.remove_cochlear_implant, index_date).date
-    # Severe mental illness
+    # cochlear implant
     cochlear_implant = case(
         when(date_remove_cochlear_implant < date_cochlear_implant).then(True),
         when(date_cochlear_implant.is_not_null() & date_remove_cochlear_implant.is_null()).then(True),
@@ -460,18 +460,18 @@ def learndis_cat(index_date):
     return learndis_cat
 
 # Homelessness
-def homeless(index_date, where=True):
-    # homeless date
-    date_homeless = last_prior_event(codelists.homeless, index_date).date
-    # Residence code  date indicating no longer homeless
-    date_reside = last_prior_event(codelists.reside, index_date).date
-    # homelessness
-    homeless = case(
-        when(date_homeless.is_null()).then(False),
-        when(date_homeless.is_not_null() & ((date_reside.is_not_null() & (date_reside <= date_homeless)) | date_reside.is_null())).then(True),
-        otherwise = False
-    )
-    return homeless
+#def homeless(index_date, where=True):
+#    # homeless date
+#    date_homeless = last_prior_event(codelists.homeless, index_date).date
+#    # Residence code  date indicating no longer homeless
+#    date_reside = last_prior_event(codelists.reside, index_date).date
+#    # homelessness
+#    homeless = case(
+#        when(date_homeless.is_null()).then(False),
+#        when(date_homeless.is_not_null() & ((date_reside.is_not_null() & (date_reside <= date_homeless)) | date_reside.is_null())).then(True),
+#        otherwise = False
+#    )
+#    return homeless
 
 
 def extended_subgroups(dataset, index_date, var_name_suffix=""):
@@ -485,30 +485,31 @@ def extended_subgroups(dataset, index_date, var_name_suffix=""):
     dataset.add_column(f"cochlear_implant{var_name_suffix}", has_cochlear_implant(index_date)) # cochlear implant
     dataset.add_column(f"cystic_fibrosis{var_name_suffix}", has_prior_event(codelists.cystic_fibrosis, index_date)) # cystic fibrosis
     dataset.add_column(f"csfl{var_name_suffix}", has_prior_event(codelists.csfl, index_date)) # Cerebrospinal fluid leak
-    dataset.add_column(f"homeless{var_name_suffix}", homeless(index_date)) # Homeless
+    dataset.add_column(f"rheum_arth{var_name_suffix}", has_prior_event(codelists.rheum_arth, index_date)) # Rheumatoid arthritis
+    #dataset.add_column(f"homeless{var_name_suffix}", homeless(index_date)) # Homeless
      
 
 ############################################################
 # demographic variables
 ############################################################
 # Ethnicity
-# def ethnicity5(index_date):
-#     ethnicity5 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity5)
-#     return ethnicity5
+def ethnicity5(index_date):
+     ethnicity5 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity5)
+     return ethnicity5
 
-# def ethnicity16(index_date):
-#     ethnicity16 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity16)
-#     return ethnicity16
+def ethnicity16(index_date):
+     ethnicity16 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity16)
+     return ethnicity16
 
 def demographic_variables(dataset, index_date, var_name_suffix=""):
     registration = practice_registrations.for_patient_on(index_date)
     dataset.add_column(f"sex{var_name_suffix}", patients.sex)
     dataset.add_column(f"age{var_name_suffix}", patients.age_on(index_date - days(1)))
-    # dataset.add_column(f"ethnicity5{var_name_suffix}", ethnicity5(index_date))
-    # dataset.add_column(f"ethnicity16{var_name_suffix}", ethnicity16(index_date))
-    # dataset.add_column(f"region{var_name_suffix}", registration.practice_nuts1_region_name)
-    # dataset.add_column(f"stp{var_name_suffix}", registration.practice_stp)
-    # dataset.add_column(f"imd{var_name_suffix}", addresses.for_patient_on(index_date).imd_rounded)
+    dataset.add_column(f"ethnicity5{var_name_suffix}", ethnicity5(index_date))
+    dataset.add_column(f"ethnicity16{var_name_suffix}", ethnicity16(index_date))
+    dataset.add_column(f"region{var_name_suffix}", registration.practice_nuts1_region_name)
+    #dataset.add_column(f"stp{var_name_suffix}", registration.practice_stp)
+    dataset.add_column(f"imd{var_name_suffix}", addresses.for_patient_on(index_date).imd_rounded)
     dataset.add_column(f"carehome_status{var_name_suffix}", carehome_status(index_date))
 
 

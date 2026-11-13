@@ -1,7 +1,6 @@
 # Ethnicity
 opensafely/ethnicity-snomed-0removed/22911876
 
-
 #Asthma
 primis-covid19-vacc-uptake/astadm/v2.5
 primis-covid19-vacc-uptake/ast/v2.5
@@ -54,7 +53,6 @@ primis-covid19-vacc-uptake/spln_cov/v2.5
 primis-covid19-vacc-uptake/bmi/v2.5
 primis-covid19-vacc-uptake/bmi_stage/v2.5
 primis-covid19-vacc-uptake/sev_obesity/v2.5
-
 
 #Learning disability
 primis-covid19-vacc-uptake/learndis/v2.5
@@ -113,6 +111,9 @@ opensafely/cystic-fibrosis-snomed/1eb02212
 # Cerebrospinal fluid leak
 nhsd-primary-care-domain-refsets/csflatrisk1_cod/20250912
 
+# Rheumatoid arthritis
+nhsd-primary-care-domain-refsets/rarth_cod/20260630
+
 # Homeless
 primis-covid19-vacc-uptake/homeless_cod/v2.5
 primis-covid19-vacc-uptake/reside_cod/v2.5
@@ -121,12 +122,12 @@ primis-covid19-vacc-uptake/reside_cod/v2.5
 # Outcomes
 
 # flu
-opensafely/influenza-identification-primary-care/2b370a92/
+opensafely/influenza-identification-primary-care/4b14d7ab/
 opensafely/influenza-identification-secondary-care/7d33be15
 
 # rsv 
-opensafely/rsv-identification-primary-care/47b6884f/
+opensafely/rsv-identification-primary-care/13907155/
 opensafely/rsv-identification-secondary-care/5ebecaf4
 
 # covid
-opensafely/covid-19-identification-primary-care/2f7731a6/
+opensafely/covid-19-identification-primary-care/507a5797/

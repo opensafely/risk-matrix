@@ -119,9 +119,11 @@ cohort_info <-
     "rsv_2024_25",     "RSV",        "2024/25",        "2024-09-01",       "2025-03-31",     NA,             "primis_atrisk",
     "rsv_2025_26",     "RSV",        "2025/26",        "2025-09-01",       "2026-03-31",     75,             "primis_atrisk" #,
 
-    # "zoster_2010_11",  "Zoster",     "2010/11",        "2010-09-01",       "2011-08-31",     70,             "primis_atrisk",
-    # "zoster_2011_12",  "Zoster",     "2011/12",        "2011-09-01",       "2012-08-31",     70,             "primis_atrisk",
-    # "zoster_2012_13",  "Zoster",     "2012/13",        "2012-09-01",       "2013-08-31",     70,             "primis_atrisk",
+    # "zoster_2018_19",  "Zoster",     "2018/19",        "2018-09-01",       "2019-08-31",     70,             "primis_atrisk",
+    # "zoster_2019_20",  "Zoster",     "2019/20",        "2019-09-01",       "2020-08-31",     70,             "primis_atrisk",
+    # "zoster_2020_21",  "Zoster",     "2020/21",        "2020-09-01",       "2021-08-31",     70,             "primis_atrisk",
+    # "zoster_2021_22",  "Zoster",     "2021/22",        "2021-09-01",       "2022-08-31",     70,             "primis_atrisk",
+    # "zoster_2022_23",  "Zoster",     "2022/23",        "2022-09-01",       "2023-08-31",     70,             "primis_atrisk",
     # "zoster_2023_24",  "Zoster",     "2023/24",        "2023-09-01",       "2024-08-31",     65,             "primis_atrisk",
     # "zoster_2024_25",  "Zoster",     "2024/25",        "2024-09-01",       "2025-08-31",     65,             "primis_atrisk",
     # "zoster_2025_26",  "Zoster",     "2025/26",        "2025-09-01",       "2026-08-31",     65,             "primis_atrisk"
@@ -156,7 +158,6 @@ vax_product_lookup <- c(
   "pfizer_unspecified" = "Comirnaty COVID-19 mRNA Vacc ready to use 0.3ml inj md vials",
 
   # Pfizer children
-
   "pfizer_original_children" = "COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)",
   "pfizer_JN1_children" = "Comirnaty JN.1 Children 5-11yrs COVID-19 Vacc 0.3ml sd vials (Pfizer Ltd)",
   "pfizer_XBB15_children" = "Comirnaty Omicron XBB.1.5 Child 5-11y COVID-19 Vacc md vials",
@@ -168,12 +169,10 @@ vax_product_lookup <- c(
   "pfizer_LP81_under5" = "Comirnaty LP.8.1 Children 6m-4y COVID-19 Vacc 0.3m md vials  (Pfizer Ltd)", # note, double space before "(Pfizer Ltd)"
 
   # Astrazeneca
-
   "az_original" = "COVID-19 Vaccine Vaxzevria 0.5ml inj multidose vials (AstraZeneca)",
   "az_original_half" = "COVID-19 Vac AZD2816 (ChAdOx1 nCOV-19) 3.5x10*9 viral part/0.5ml dose sol for inj MDV (AstraZeneca)",
 
   # Moderna
-
   "moderna_original" = "COVID-19 mRNA Vaccine Spikevax (nucleoside modified) 0.1mg/0.5mL dose disp for inj MDV (Moderna)",
   "moderna_omicron" = "COVID-19 Vac Spikevax (Zero)/(Omicron) inj md vials",
   "moderna_BA45" = "COVID-19 Vacc Spikevax Orig/Omicron BA.4/BA.5 inj md vials",
@@ -186,7 +185,6 @@ vax_product_lookup <- c(
   "sanofigsk_B1" = "COVID-19 Vacc VidPrevtyn (B.1.351) 0.5ml inj multidose vials",
   "sanofigsk_D614" = "COVID-19 Vac Sanofi (CoV2 preS dTM monovalent D614 (recombinant)) 5mcg/0.5ml dose susp for inj MDV",
   "sanofigsk_D614B1" = "COVID-19 Vacc Sanofi (D614+B.1.351) 0.5ml inj md vials",
-
 
   # Novavax
   "novavax" = "COVID-19 Vac Nuvaxovid (recombinant, adj) 5micrograms/0.5ml dose susp for inj MDV (Novavax CZ a.s.)",
@@ -226,7 +224,6 @@ vax_product_lookup <- c(
 
   # Not specified
   "unspecified" = "SARS-2 Coronavirus vaccine"
-
 )
 
 
@@ -330,37 +327,36 @@ standardise_demographic_characteristics <-
 
     ## --VARIABLES--
     ## demographics
-    ageband7 = cut(
+    ageband6 = cut(
       age,
       breaks = c(-Inf, 5, 25, 45, 65, 85, 105, Inf),
-      labels = c("under 5", "5-24", "25-44", "45-64", "65-84", "85-104", "105+"), # under 12 and 105+ should be excluded in analysis but include here to ensure nobody slipped through the net
+      labels = c("under 5", "5-24", "25-44", "45-64", "65-84", "85-104", "105+"), #105+ should be excluded in analysis but include here to ensure nobody slipped through the net
       right = FALSE
     ),
-    ageband18 = cut(
+    ageband12 = cut(
       age,
-      breaks = c(-Inf, 1, 2, 5, 15, 25, 35, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 105, Inf),
+      breaks = c(-Inf, 1, 2, 5, 15, 25, 35, 45, 55, 65, 75, 85, 105, Inf),
       labels = c("under 1", "1","2-4", "5-14", "15-24", "25-34", "35-44",
-      "45-49", "50-54", "55-59", "60-64", "65-69", "70-74",
-      "75-79", "80-84", "85-89", "90-104", "105+"), # 105+ should be excluded in analysis but include here to ensure nobody slipped through the net
+      "45-54", "55-64", "65-74", "75-84", "85-104", "105+"), #105+ should be excluded in analysis but include here to ensure nobody slipped through the net
       right = FALSE
     ),
-    # region = fct_collapse(
-    #   factor(region, ordered = FALSE),
-    #   `East of England` = "East",
-    #   `London` = "London",
-    #   `Midlands` = c("West Midlands", "East Midlands"),
-    #   `North East and Yorkshire` = c("Yorkshire and The Humber", "North East"),
-    #   `North West` = "North West",
-    #   `South East` = "South East",
-    #   `South West` = "South West"
-    # ),
-    # imd_quintile = cut(
-    #   imd,
-    #   breaks = c(0, 32844 * (1:5) / 5),
-    #   labels = c("1 (most deprived)", "2", "3", "4", "5 (least deprived)"),
-    #   include.lowest = TRUE,
-    #   right = FALSE
-    # ),
+    region = fct_collapse(
+      factor(region, ordered = FALSE),
+      `East of England` = "East",
+      `London` = "London",
+      `Midlands` = c("West Midlands", "East Midlands"),
+      `North East and Yorkshire` = c("Yorkshire and The Humber", "North East"),
+      `North West` = "North West",
+      `South East` = "South East",
+      `South West` = "South West"
+    ),
+    imd_quintile = cut(
+      imd,
+      breaks = c(0, 32844 * (1:5) / 5),
+      labels = c("1 (most deprived)", "2", "3", "4", "5 (least deprived)"),
+      include.lowest = TRUE,
+      right = FALSE
+    ),
   )
 
 ## CKD-RRT classification
@@ -372,10 +368,10 @@ standardise_primis_and_extended_characteristics <-
     ckd_rrt = case_when(
       rrt_cat == "1 dialysis" ~ "RRT (dialysis)",
       rrt_cat == "2 transplant" ~ "RRT (transplant)",
-      ckd_stage_3to5 == "5" ~ "Stage 5",
-      ckd_stage_3to5 == "4" ~ "Stage 4",
-      ckd_stage_3to5 == "3" ~ "Stage 3",
-      ckd_stage_3to5 == "ckd, without stage 3-5 code" ~ "CKD, without stage 3-5 code",
+      ckd_stage_3to5 == "5" ~ "Stage 5 CKD",
+      ckd_stage_3to5 == "4" ~ "Stage 4 CKD",
+      ckd_stage_3to5 == "3" ~ "Stage 3 CKD",
+      ckd_stage_3to5 == "ckd, without stage 3-5 code" ~ "CKD without stage 3-5 code",
       TRUE ~ "No CKD or RRT"
     ) |> factor(levels = factor_levels$ckd_rrt, ordered = FALSE),
 
@@ -388,6 +384,8 @@ standardise_primis_and_extended_characteristics <-
 
     sickle_cell_asplenia = (sickle_cell | asplenia),
 
+    immunosuppressed_crd = (immunosuppressed | crd),
+    
     primis_atrisk_count = crd + chd + ckd + cld + cns_learndis + diabetes + immunosuppressed + asplenia + severe_obesity + smi,
 
     primis_atrisk_count_fct = cut(primis_atrisk_count, breaks = c(0,1,2,3,4,Inf), labels = c("0", "1", "2", "3", "4+"), right= FALSE)
@@ -411,20 +409,20 @@ level1_group <- c(
   # Level 1A (all)
   "all",
 
-  # level 1B (age4)
-  "ageband7" #,
+  # level 1B (age6)
+  "ageband6",
 
-  # # level 1C (age13)
-  # "ageband18",
+  # level 1C (age13)
+  "ageband12"
 )
 
 level2_group <- c(
   "all",
 
   # sociodemographic subgroups
-  "ageband7",
-  "ageband18",
-  "sex",
+  "ageband6",
+  "ageband12",
+  # "sex",
   # "ethnicity5",
   # "ethnicity16",
   # "region",
@@ -454,7 +452,9 @@ level2_group <- c(
   "cochlear_implant",   # Cochlear implant
   "cystic_fibrosis",    # Cystic fibrosis
   "csfl",               # Cerebrospinal fluid leak
-  "homeless"           # Homeless
+  "rheum_arth",         # Rheumatoid arthritis
+  "immunosuppressed_crd" # Immunosuppressed or crd
+  #"homeless"           # Homeless
 )
 
 level_combos <-
@@ -464,7 +464,7 @@ level_combos <-
   ) |>
   filter(
     (group1 == group2) %in% c(FALSE, NA) | (group1 == "all"),
-    !((group1 %in% c("ageband7", "ageband18")) & (group2 %in% c("ageband7", "ageband18"))),
+    !((group1 %in% c("ageband6", "ageband12")) & (group2 %in% c("ageband6", "ageband12"))),
   )
 
 # Local run flag ----
