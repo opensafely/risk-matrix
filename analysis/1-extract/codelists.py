@@ -291,11 +291,13 @@ rsv_narrow_snomed_codelist = codelist_from_csv(
   column = "code",
 )
 
-
 rsv_icd10 = codelist_from_csv(
     "codelists/opensafely-rsv-identification-secondary-care.csv", 
     column="code",
 )
+
+rsv_icd10_narrow = ["B974", "J121", "J205", "J210"]
+
 
 #TODO: zoster
 
@@ -359,6 +361,11 @@ cystic_fibrosis = codelist_from_csv(
 
 csfl = codelist_from_csv(
     "codelists/nhsd-primary-care-domain-refsets-csflatrisk1_cod.csv", 
+    column="code",
+)
+
+rheum_arth = codelist_from_csv(
+    "codelists/nhsd-primary-care-domain-refsets-rarth_cod.csv",
     column="code",
 )
 

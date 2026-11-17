@@ -122,6 +122,7 @@ elif target == "RSV":
     add_target_vaccines(dataset, ["HUMAN RESPIRATORY SYNCYTIAL VIRUS"], cohort_start_date, cohort_end_date)
     add_primary_care_outcomes(dataset, codelists.rsv_narrow_snomed_codelist, cohort_start_date, cohort_end_date)      
     add_sev_outcomes(dataset, codelists.rsv_icd10, cohort_start_date, cohort_end_date)
+    add_sev_outcomes(dataset, codelists.rsv_icd10_narrow, cohort_start_date, cohort_end_date)
 
 #TODO: Zoster
 

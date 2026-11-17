@@ -132,6 +132,12 @@ for (cohort_id in cohort_ids) {
     ~ as.integer(plyr::round_any(runif(n = ..n, 100, 32000), 100)),
     missing_rate = ~0.05
   ),
+  
+  rural_urban = bn_node(
+    variable_formula = ~ rfactor(n = ..n, levels = c(
+      "1", "2", "3", "4", "5", "6", "7", "8"), p = rep(0.125,8)
+      )
+  ),
 
   carehome_status = bn_node(
     ~ rbernoulli(n = ..n, p = if_else(age < 65, 0.01, 0.2)),
