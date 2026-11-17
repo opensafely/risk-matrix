@@ -42,14 +42,15 @@ fs::dir_create(output_dir)
 options(width = 200)
 
 # Import extract ----
-
-data_extract <- read_feather(
-  here("output", "1-extract", glue("extract_{cohort_id}.arrow"))
-)
-
-# data_extract <- read_feather(
-#   here("analysis", "1-extract", "dummy-data", glue("dummy_{cohort_id}.arrow"))
-# )
+if (length(args) == 0) {
+  data_extract <- read_feather(
+     here("analysis", "1-extract", "dummy-data", glue("dummy_{cohort_id}.arrow"))
+   ) 
+} else {
+  data_extract <- read_feather(
+    here("output", "1-extract", glue("extract_{cohort_id}.arrow"))
+    )
+}
 
 capture.output(
   skimr::skim_without_charts(data_extract),
