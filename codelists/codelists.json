@@ -180,60 +180,6 @@
       "downloaded_at": "2025-09-26 20:14:16.691484Z",
       "sha": "8b5a59338b209bc8dab506364879dead40f1de0c"
     },
-    "primis-covid19-vacc-uptake-carehome.csv": {
-      "id": "primis-covid19-vacc-uptake/carehome/v2.5",
-      "url": "https://www.opencodelists.org/codelist/primis-covid19-vacc-uptake/carehome/v2.5/",
-      "downloaded_at": "2025-09-26 20:14:18.111717Z",
-      "sha": "0543cdba73cfc6b892a94aad94beb7b4fd0ce8bb"
-    },
-    "primis-covid19-vacc-uptake-nursehome.csv": {
-      "id": "primis-covid19-vacc-uptake/nursehome/v2.5",
-      "url": "https://www.opencodelists.org/codelist/primis-covid19-vacc-uptake/nursehome/v2.5/",
-      "downloaded_at": "2025-09-26 20:14:19.644932Z",
-      "sha": "91d03ec723ba5a6ab83b72d8307f68a5e4be2b4e"
-    },
-    "primis-covid19-vacc-uptake-domcare.csv": {
-      "id": "primis-covid19-vacc-uptake/domcare/v2.5",
-      "url": "https://www.opencodelists.org/codelist/primis-covid19-vacc-uptake/domcare/v2.5/",
-      "downloaded_at": "2025-09-26 20:14:20.928059Z",
-      "sha": "711f760dbd4869a8836a7bf6bfc062c1fc286095"
-    },
-    "nhsd-hiv-aids-snomed.csv": {
-      "id": "nhsd/hiv-aids-snomed/68ca529e",
-      "url": "https://www.opencodelists.org/codelist/nhsd/hiv-aids-snomed/68ca529e/",
-      "downloaded_at": "2024-11-27 14:47:21.976564Z",
-      "sha": "0a17c7d5410264ef321a0e8f8fed48fdbbec483a"
-    },
-    "opensafely-solid-organ-transplantation-snomed.csv": {
-      "id": "opensafely/solid-organ-transplantation-snomed/2020-04-10",
-      "url": "https://www.opencodelists.org/codelist/opensafely/solid-organ-transplantation-snomed/2020-04-10/",
-      "downloaded_at": "2024-11-27 14:47:22.056227Z",
-      "sha": "cdb61aa51b4400c1aba2f8e4728c1b8130c4fd40"
-    },
-    "opensafely-cancer-excluding-lung-and-haematological-snomed.csv": {
-      "id": "opensafely/cancer-excluding-lung-and-haematological-snomed/2020-04-15",
-      "url": "https://www.opencodelists.org/codelist/opensafely/cancer-excluding-lung-and-haematological-snomed/2020-04-15/",
-      "downloaded_at": "2024-11-27 14:47:22.476779Z",
-      "sha": "d43aff12fcb3b404c635e24f964ba2a368c96c98"
-    },
-    "opensafely-chemotherapy-or-radiotherapy-snomed.csv": {
-      "id": "opensafely/chemotherapy-or-radiotherapy-snomed/2020-04-15",
-      "url": "https://www.opencodelists.org/codelist/opensafely/chemotherapy-or-radiotherapy-snomed/2020-04-15/",
-      "downloaded_at": "2024-11-27 14:47:22.628174Z",
-      "sha": "10f223ed1c0b45b4f8276e33c8293e0287b3f611"
-    },
-    "opensafely-lung-cancer-snomed.csv": {
-      "id": "opensafely/lung-cancer-snomed/2020-04-15",
-      "url": "https://www.opencodelists.org/codelist/opensafely/lung-cancer-snomed/2020-04-15/",
-      "downloaded_at": "2024-11-27 14:47:22.750952Z",
-      "sha": "f0debdf1c968242fa8790cd0b773662b8e169f43"
-    },
-    "opensafely-haematological-cancer-snomed.csv": {
-      "id": "opensafely/haematological-cancer-snomed/2020-04-15",
-      "url": "https://www.opencodelists.org/codelist/opensafely/haematological-cancer-snomed/2020-04-15/",
-      "downloaded_at": "2024-11-27 14:47:22.882635Z",
-      "sha": "c87e49e8d2965bc489f9baba670783f15ce73896"
-    },
     "nhsd-primary-care-domain-refsets-carehome_cod.csv": {
       "id": "nhsd-primary-care-domain-refsets/carehome_cod/20250627",
       "url": "https://www.opencodelists.org/codelist/nhsd-primary-care-domain-refsets/carehome_cod/20250627/",
@@ -311,18 +257,6 @@
       "url": "https://www.opencodelists.org/codelist/nhsd-primary-care-domain-refsets/rarth_cod/20260630/",
       "downloaded_at": "2026-11-13 09:49:00.193946+00:00Z",
       "sha": "0a66ad781c8deff1f5a27c0ea6010651232995ca"
-    },
-    "primis-covid19-vacc-uptake-homeless_cod.csv": {
-      "id": "primis-covid19-vacc-uptake/homeless_cod/v2.5",
-      "url": "https://www.opencodelists.org/codelist/primis-covid19-vacc-uptake/homeless_cod/v2.5/",
-      "downloaded_at": "2026-01-07 16:52:31.300787Z",
-      "sha": "91abb1b83667d3b2eab8a357d5c01aa88a2bdcc4"
-    },
-    "primis-covid19-vacc-uptake-reside_cod.csv": {
-      "id": "primis-covid19-vacc-uptake/reside_cod/v2.5",
-      "url": "https://www.opencodelists.org/codelist/primis-covid19-vacc-uptake/reside_cod/v2.5/",
-      "downloaded_at": "2026-01-07 16:52:31.359052Z",
-      "sha": "906a866473bd4c99a48ddb1d86c08986d228ba38"
     },
     "opensafely-influenza-identification-primary-care.csv": {
       "id": "opensafely/influenza-identification-primary-care/4b14d7ab",
