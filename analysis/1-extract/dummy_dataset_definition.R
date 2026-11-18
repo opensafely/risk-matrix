@@ -136,7 +136,7 @@ for (cohort_id in cohort_ids) {
   rural_urban_5 = bn_node(
     variable_formula = ~ rfactor(n = ..n, levels = c(
       "Urban major conurbation", "Urban minor conurbation",
-      "Urban city and town", "Rural town and fringe"
+      "Urban city and town", "Rural town and fringe",
       "Rural village and dispersed"), p = rep(0.2,5)
     )
     ),
