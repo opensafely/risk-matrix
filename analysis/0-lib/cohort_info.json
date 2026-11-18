@@ -39,6 +39,16 @@
     "clinical_priority": "primis_atrisk",
     "cohort_end_days": 69
   },
+  "flu_2022_23": {
+    "cohort_id": "flu_2022_23",
+    "target": "Influenza",
+    "cohort": "2022/23",
+    "cohort_start_date": "2022-09-01",
+    "cohort_end_date": "2023-03-31",
+    "age_threshold": 65,
+    "clinical_priority": "primis_atrisk",
+    "cohort_end_days": 212
+  },
   "flu_2023_24": {
     "cohort_id": "flu_2023_24",
     "target": "Influenza",
@@ -66,6 +76,16 @@
     "cohort_start_date": "2025-09-01",
     "cohort_end_date": "2026-03-31",
     "age_threshold": 65,
+    "clinical_priority": "primis_atrisk",
+    "cohort_end_days": 212
+  },
+  "rsv_2022_23": {
+    "cohort_id": "rsv_2022_23",
+    "target": "RSV",
+    "cohort": "2022/23",
+    "cohort_start_date": "2022-09-01",
+    "cohort_end_date": "2023-03-31",
+    "age_threshold": "NA",
     "clinical_priority": "primis_atrisk",
     "cohort_end_days": 212
   },

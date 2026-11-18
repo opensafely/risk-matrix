@@ -425,22 +425,18 @@ level1_group <- c(
   "ageband12"
 )
 
-level2_group <- c(
-  "all",
+age_subgroups <- c("ageband6", "ageband12")
 
-  # sociodemographic subgroups
-  "ageband6",
-  "ageband12",
-  # "sex",
-  # "ethnicity5",
-  # "ethnicity16",
-  # "region",
-  # "imd_quintile",
-  # "carehome_status",
+sociodemographic_subgroups <- c(
+  "sex",
+  "ethnicity5",
+  "region",
+  "imd_quintile",
+  "carehome_status",
+  "rurality_classification"
+)
 
-  # Core clinical risk subgroups
-  "primis_atrisk",
-  "primis_atrisk_count_fct",
+core_subgroups <- c(
   "crd",
   "chd",
   "ckd",
@@ -450,9 +446,10 @@ level2_group <- c(
   "immunosuppressed",
   "asplenia",
   "severe_obesity",
-  "smi",
+  "smi"
+)
 
-  # Extended subgroups
+extended_subgroups <- c(
   "ckd_rrt", # RRT - CKD3-5
   "copd", # Chronic obstructive pulmonary disease
   "learndis_cat", # Learning disabilities categories
@@ -463,8 +460,31 @@ level2_group <- c(
   "csfl",               # Cerebrospinal fluid leak
   "rheum_arth",         # Rheumatoid arthritis
   "immunosuppressed_crd" # Immunosuppressed or crd
-  #"homeless"           # Homeless
 )
+
+level2_group <- c(
+  "all",
+  age_subgroups,
+  "primis_atrisk",
+  "primis_atrisk_count_fct",
+  core_subgroups,
+  extended_subgroups
+)
+
+level2_baseline <- c(
+  level2_group,
+  sociodemographic_subgroups
+)
+
+baseline_combos <-
+  expand_grid(
+    group1 = level1_group,
+    group2 = level2_baseline
+  ) |>
+  filter(
+    (group1 == group2) %in% c(FALSE, NA) | (group1 == "all"),
+    !((group1 %in% c("ageband6", "ageband12")) & (group2 %in% c("ageband6", "ageband12"))),
+  )
 
 level_combos <-
   expand_grid(
