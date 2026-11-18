@@ -11,4 +11,3 @@ venv/
 .Rproj.user/
 .devcontainer/ehrql-main/
 analysis/0-lib/.Rapp.history
-analysis/1-extract/dummy-data/*
