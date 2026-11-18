@@ -704,7 +704,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
 ## function to loop over all group combinations and report IRR of level0 versus levelX ----
 # for a given outcome, loop over all groups combinations, obtaining contrasts for each using adjusted_estimates function, and combining into one file
 # specifically, compare level2 groups amongst each other, for all people meeting level1 group criteria
-get_all_estimates <- function(data, event_name, event_time, event_indicator, models = 1) {
+get_all_estimates <- function(data, event_name, event_time, event_indicator, models = 1:3) {
 
   l1ticker <<- ""
 
@@ -723,7 +723,7 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator, mod
           summary_data <-
             data |>
             mutate(
-              label1 = data[[group1]],
+              label1 = .data[[group1]],
             ) |>
             nest(.by = c(label1), .key = "group1_subset") |>
             mutate(
@@ -742,8 +742,6 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator, mod
               across(c(label1, label2), as.character) # to ensure the unnest() works later
             )
 
-          rm(summary_data)
-          gc()
           return(summary_data)
         }
       )
