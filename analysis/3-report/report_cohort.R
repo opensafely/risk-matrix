@@ -350,10 +350,10 @@ get_all_km_estimates <- function(data, event_name, event_time, event_indicator, 
 
   # Write table to CSV files
   # split up by level1 grouping variables, so as not to exceed 5,000 row limit
-  iwalk(
-    split(km_estimates_table, km_estimates_table$group1),
-    ~ write_csv(.x, fs::path(output_dir, glue("km_estimates_{event_name}_table_{.y}.csv")))
-  )
+  # iwalk(
+  #   split(km_estimates_table, km_estimates_table$group1),
+  #   ~ write_csv(.x, fs::path(output_dir, glue("km_estimates_{event_name}_table_{.y}.csv")))
+  # )
 
   # Write table to a CSV file containing _only_ reporting milestones
   km_estimates_milestones <-
@@ -361,20 +361,20 @@ get_all_km_estimates <- function(data, event_name, event_time, event_indicator, 
     filter(cohort_end_milestone == 1L) |>
     mutate(
       milestone_date = cohort_info$cohort_end_date,
-      milestone = "Cohort end"
+      milestone = "cohort_end"
     ) |>
     rename(days_since_cohort_start = time) |>
     select(-cohort_end_milestone)
 
-  # Split outputs if 5,000 rows exceeded
-  iwalk(
-     split(km_estimates_milestones, km_estimates_milestones$milestone),
-     ~ write_csv(.x, fs::path(output_dir, glue("km_estimates_{event_name}_milestones_{.y}.csv")))
-  )
-  # write_csv(
-  #   km_estimates_milestones,
-  #   fs::path(output_dir, glue("km_estimates_{event_name}_milestones_cohort_end.csv"))
+  # Code to split outputs if 5,000 rows exceeded
+  # iwalk(
+  #   split(km_estimates_milestones, km_estimates_milestones$milestone),
+  #   ~ write_csv(.x, fs::path(output_dir, glue("km_estimates_{event_name}_milestones_{.y}.csv")))
   # )
+  write_csv(
+    km_estimates_milestones,
+    fs::path(output_dir, glue("km_estimates_{event_name}_milestones_cohort_end.csv"))
+  )
   return(km_estimates_table)
 }
 
