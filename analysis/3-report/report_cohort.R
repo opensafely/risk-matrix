@@ -366,15 +366,15 @@ get_all_km_estimates <- function(data, event_name, event_time, event_indicator, 
     rename(days_since_cohort_start = time) |>
     select(-cohort_end_milestone)
 
-  # Code to split outputs if 5,000 rows exceeded
-  # iwalk(
-  #   split(km_estimates_milestones, km_estimates_milestones$milestone),
-  #   ~ write_csv(.x, fs::path(output_dir, glue("km_estimates_{event_name}_milestones_{.y}.csv")))
-  # )
-  write_csv(
-    km_estimates_milestones,
-    fs::path(output_dir, glue("km_estimates_{event_name}_milestones_cohort_end.csv"))
+  # Split outputs if 5,000 rows exceeded
+  iwalk(
+     split(km_estimates_milestones, km_estimates_milestones$milestone),
+     ~ write_csv(.x, fs::path(output_dir, glue("km_estimates_{event_name}_milestones_{.y}.csv")))
   )
+  # write_csv(
+  #   km_estimates_milestones,
+  #   fs::path(output_dir, glue("km_estimates_{event_name}_milestones_cohort_end.csv"))
+  # )
   return(km_estimates_table)
 }
 
@@ -383,7 +383,7 @@ cat("## Report KM cumulative incidence of vaccination in a standardised table", 
 ## _______________________________________________________________________________________
 
 km_estimates_vax_table <- get_all_km_estimates(data = data_prepared, event_name =  "vax", event_time = "vax_time", event_indicator = "vax_indicator")
-km_estimates_vax_alive_table <- get_all_km_estimates(filter(data_prepared, alive_and_registered), "vax_alive", event_time = "vax_time", event_indicator = "vax_indicator")
+#km_estimates_vax_alive_table <- get_all_km_estimates(filter(data_prepared, alive_and_registered), "vax_alive", event_time = "vax_time", event_indicator = "vax_indicator")
 
 # ________________________________
 # 2.A.i Kaplan-Meier plots (for server inspection only)
