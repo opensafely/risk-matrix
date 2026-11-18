@@ -114,17 +114,14 @@ baseline_table <-
   )
 
 # Add group1 totals
-baseline_table$group2_value[is.na(baseline_table$group2_value)] = "All"
-for (i in 1:nrow(baseline_table)) {
-  baseline_table$n_group1[i] = baseline_table$n_group2[baseline_table$group1_value==baseline_table$group1_value[i] & 
-                                                         baseline_table$group2_value=="All"][1]
-}
-
-baseline_table <- baseline_table %>%
-  relocate(n_group1, .after = group1_value) %>%
-  mutate(
-    pct = round(100 * n_group2 / n_group1, 1)
-  )
+baseline_table <- baseline_table |>
+  mutate(group2_value = replace_na(group2_value, "All")) |>
+  left_join(
+    baseline_table |> filter(group2 == "all") |> select(group1, group1_value, n_group1 = n_group2),
+    by = c("group1", "group1_value")
+  ) |>
+  relocate(n_group1, .after = group1_value) |>
+  mutate(pct = round(100 * n_group2 / n_group1, 1))
 
 write_csv(
   baseline_table,
@@ -210,12 +207,25 @@ write_csv(
 
 ## tests ----
 
-times_count <- table(cut(data_prepared$vax_time, c(-Inf, 0, 1, Inf), right = FALSE, labels = c("<0", "0", ">0")), useNA = "ifany")
+# follow-up times used as the log offset in the models (narrow outcomes exist for RSV only)
+modelled_times <- intersect(
+  c("vax_time", "primary_care_time", "admitted_time", "admitted_primary_time",
+    "disease_death_time", "admitted_narrow_time", "admitted_primary_narrow_time",
+    "disease_death_narrow_time"),
+  names(data_prepared)
+)
 
-if (!identical(as.integer(times_count), c(0L, 0L, nrow(data_prepared)))) {
-  print(times_count)
-  stop("all event times must be strictly positive")
-}
+walk(
+  modelled_times,
+  \(time_var) {
+    times_count <- table(cut(data_prepared[[time_var]], c(-Inf, 0, 1, Inf), right = FALSE, labels = c("<0", "0", ">0")), useNA = "ifany")
+    
+    if (!identical(as.integer(times_count), c(0L, 0L, nrow(data_prepared)))) {
+      print(times_count)
+      stop(glue("all {time_var} values must be strictly positive"))
+    }
+  }
+)
 
 ## Function to calculate KM estimates for a given stratification variable ----
 
@@ -512,7 +522,7 @@ build_model_spec <- function(data, subgroup, model) {
 }
 
 ## Function to output IRs and IRRs for disease burden comparing levels of one subgroup ----
-adjusted_estimates <- function(data, subgroup, event_time, event_indicator, model = 1:3) {
+adjusted_estimates <- function(data, subgroup, event_time, event_indicator, model = 1) {
 
   # model 3 is only defined for core clinical subgroups
   # for other subgroups, still output descriptive rows with NA estimates
@@ -666,11 +676,9 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
     transmute(
       variable, label, reference_row,
       n_obs, n_event, exposure,
-      ir = n_event / exposure,
       ir_1000py = ir_calc$ir,
       ir_1000py_lower = ir_calc$ir_lower_ci,
       ir_1000py_upper = ir_calc$ir_upper_ci,
-      irr_unadjusted = ir / ir[reference_row],
       irr = exp(estimate),
       irr.low = exp(conf.low),
       irr.high = exp(conf.high),
@@ -679,10 +687,9 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
       covariates = spec$covariates
     )
 
-  return(data_poisson)
-
   rm(data_outcome)
   gc()
+  return(data_poisson)
 }
 
 # adjusted_estimates(data_prepared, "ageband7", "admitted_time", "admitted_indicator")
@@ -697,7 +704,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
 ## function to loop over all group combinations and report IRR of level0 versus levelX ----
 # for a given outcome, loop over all groups combinations, obtaining contrasts for each using adjusted_estimates function, and combining into one file
 # specifically, compare level2 groups amongst each other, for all people meeting level1 group criteria
-get_all_estimates <- function(data, event_name, event_time, event_indicator, models = 1:3) {
+get_all_estimates <- function(data, event_name, event_time, event_indicator, models = 1) {
 
   l1ticker <<- ""
 
@@ -735,9 +742,9 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator, mod
               across(c(label1, label2), as.character) # to ensure the unnest() works later
             )
 
-          return(summary_data)
           rm(summary_data)
           gc()
+          return(summary_data)
         }
       )
     ) |>
@@ -783,16 +790,16 @@ get_all_estimates(data_prepared, "admitted_primary", "admitted_primary_time", "a
 get_all_estimates(data_prepared, "disease_death", "disease_death_time", "disease_death_indicator")
 
 # Exclusion of immunosuppressed
-get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "primary_care_no_IS", "primary_care_time", "primary_care_indicator")
-get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "admitted_no_IS", "admitted_time", "admitted_indicator")
-get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "admitted_primary_no_IS", "admitted_primary_time", "admitted_primary_indicator")
-get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "disease_death_no_IS", "disease_death_time", "disease_death_indicator")
+get_all_estimates(data_prepared |> filter(immunosuppressed==0), "primary_care_no_IS", "primary_care_time", "primary_care_indicator")
+get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_no_IS", "admitted_time", "admitted_indicator")
+get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_primary_no_IS", "admitted_primary_time", "admitted_primary_indicator")
+get_all_estimates(data_prepared |> filter(immunosuppressed==0), "disease_death_no_IS", "disease_death_time", "disease_death_indicator")
 
 # Exclusion of immunosuppressed_crd
-get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "primary_care_no_IS_CRD", "primary_care_time", "primary_care_indicator")
-get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "admitted_no_IS_CRD", "admitted_time", "admitted_indicator")
-get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "admitted_primary_no_IS_CRD", "admitted_primary_time", "admitted_primary_indicator")
-get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "disease_death_no_IS_CRD", "disease_death_time", "disease_death_indicator")
+get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "primary_care_no_IS_CRD", "primary_care_time", "primary_care_indicator")
+get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_no_IS_CRD", "admitted_time", "admitted_indicator")
+get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_primary_no_IS_CRD", "admitted_primary_time", "admitted_primary_indicator")
+get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "disease_death_no_IS_CRD", "disease_death_time", "disease_death_indicator")
 
 # RSV only: narrow phenotype for severe outcomes
 if ("admitted_narrow_indicator" %in% names(data_prepared)) {
@@ -800,11 +807,11 @@ if ("admitted_narrow_indicator" %in% names(data_prepared)) {
   get_all_estimates(data_prepared, "admitted_primary_narrow", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
   get_all_estimates(data_prepared, "disease_death_narrow", "disease_death_narrow_time", "disease_death_narrow_indicator")
   
-  get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "admitted_narrow_no_IS", "admitted_narrow_time", "admitted_narrow_indicator")
-  get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "admitted_primary_narrow_no_IS", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
-  get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "disease_death_narrow_no_IS", "disease_death_narrow_time", "disease_death_narrow_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_narrow_no_IS", "admitted_narrow_time", "admitted_narrow_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_primary_narrow_no_IS", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed==0), "disease_death_narrow_no_IS", "disease_death_narrow_time", "disease_death_narrow_indicator")
   
-  get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "admitted_narrow_no_IS_CRD", "admitted_narrow_time", "admitted_narrow_indicator")
-  get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "admitted_primary_narrow_no_IS_CRD", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
-  get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "disease_death_narrow_no_IS_CRD", "disease_death_narrow_time", "disease_death_narrow_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_narrow_no_IS_CRD", "admitted_narrow_time", "admitted_narrow_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_primary_narrow_no_IS_CRD", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "disease_death_narrow_no_IS_CRD", "disease_death_narrow_time", "disease_death_narrow_indicator")
 }

@@ -343,11 +343,11 @@ factor_levels <-
       "CKD without stage 3-5 code"
     ),
     rural_urban_5 = c(
-      "Urban Major Conurbation",
-      "Urban Minor Conurbation",
-      "Urban City and Town",
-      "Rural Town and Fringe",
-      "Rural Village and Dispersed"
+      "Urban city and town",
+      "Urban major conurbation",
+      "Urban minor conurbation",
+      "Rural town and fringe",
+      "Rural village and dispersed"
     )
 
   )
@@ -389,7 +389,8 @@ standardise_demographic_characteristics <-
       labels = c("1 (most deprived)", "2", "3", "4", "5 (least deprived)"),
       include.lowest = TRUE,
       right = FALSE
-    )
+    ),
+    rural_urban_5 = factor(na_if(rural_urban_5, ""), levels = factor_levels$rural_urban_5)
   )
 
 ## CKD-RRT classification
