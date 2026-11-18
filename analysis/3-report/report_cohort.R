@@ -16,12 +16,13 @@ library("arrow")
 library("survival")
 library("splines")
 library("parglm")
+library("rms")
 
 # Import custom functions
 source(here("analysis", "0-lib", "design.R"))
+source(here("analysis", "0-lib", "calc_ir.R"))
 
 args <- commandArgs(trailingOnly = TRUE)
-
 
 if (length(args) == 0) {
   cohort_id <- "flu_2023_24"
@@ -33,20 +34,18 @@ cohort_info <- cohort_info |>
   filter(cohort_id == .env$cohort_id)
 # list2env(campaign_info, globalenv())
 
-# how wide are the temporal bins for frequencies over time for Kaplan-Meier plots? in days
+# Set width of temporal bins for frequencies over time in Kaplan-Meier plots in days
 temporal_resolution_km <- 7L
 
 # overwrite cohort end to match rounded Kaplan-Meier curve
 cohort_info$cohort_end_days <- ceiling_any(cohort_info$cohort_end_days, temporal_resolution_km)
 
 # Create output directory ----
-
 output_dir <- here("output", "3-report", glue("report_{cohort_id}"))
 fs::dir_create(output_dir)
 options(width = 200)
 
 # Import prepared data ----
-
 data_prepared <- read_feather(
   here("output", "2-prepare", glue("prepare_{cohort_id}"), glue("prepare_{cohort_id}.arrow"))
 )
@@ -62,7 +61,80 @@ capture.output(
 #################################################################################################################
 
 # ________________________________
-# 1.A Baseline vaccination history
+# 1.A Baseline characteristics 
+# ________________________________
+
+baseline_summary <- function(data, ...) {
+  group_names <- c(...)
+  
+  data |>
+    count(
+      across(all_of(group_names)),
+      cohort_id,
+      name = "n_group2"
+    ) |>
+    group_by(
+      across(all_of(group_names)),
+      cohort_id
+    ) |>
+    mutate(
+      n_group2 = roundmid_any(n_group2, sdc_threshold)
+    ) |>
+    ungroup()
+}
+
+baseline_table <-
+  baseline_combos |>
+  mutate(
+    summary = map2(
+      group1,
+      group2,
+      \(x, y) {
+        
+        if (is.na(y)) y <- NULL
+        
+        lookup <- c(
+          group1_value = x,
+          group2_value = y
+        )
+        
+        baseline_summary(data_prepared, x, y) |>
+          mutate(across(c(all_of(c(x, y))), as.character)) |>
+          rename(any_of(lookup))
+      }
+    )
+  ) |>
+  unnest(summary) |>
+  select(
+    cohort_id,
+    group1,
+    group1_value,
+    group2,
+    group2_value,
+    everything()
+  )
+
+# Add group1 totals
+baseline_table$group2_value[is.na(baseline_table$group2_value)] = "All"
+for (i in 1:nrow(baseline_table)) {
+  baseline_table$n_group1[i] = baseline_table$n_group2[baseline_table$group1_value==baseline_table$group1_value[i] & 
+                                                         baseline_table$group2_value=="All"][1]
+}
+
+baseline_table <- baseline_table %>%
+  relocate(n_group1, .after = group1_value) %>%
+  mutate(
+    pct = round(100 * n_group2 / n_group1, 1)
+  )
+
+write_csv(
+  baseline_vax_table,
+  fs::path(output_dir, "baseline_summary.csv")
+)
+
+
+# ________________________________
+# 1.B Baseline vaccination history 
 # ________________________________
 
 baseline_vax_summary <- function(data, ...) {
@@ -136,8 +208,6 @@ write_csv(
 # This code borrows heavily from the KM reusable action https://github.com/opensafely-actions/kaplan-meier-function/blob/main/analysis/km.R
 # The reason not to use the KM reusable action directly is that we need to reuse it multiple times across many different stratification variables
 # This would create a large number of project.yaml actions, so it's easier to do the repeats within a single script
-# The reusable action could be modified to enable multiple stratified analyses to be run, but it's a bit faffy and a bit scope-creepy
-
 
 ## tests ----
 
@@ -155,10 +225,6 @@ if (!identical(as.integer(times_count), c(0L, 0L, nrow(data_prepared)))) {
 km_estimates <- function(data, group_name1, group_name2, event_name, event_time, event_indicator, resolution = 0) {
 
   group_names <- c(group_name1, group_name2)
-
-  # if (is.na(group_name2)) {
-  #   group_name2 <- "all"
-  # }
 
   data_outcome <-
     data |>
@@ -244,7 +310,6 @@ km_estimates <- function(data, group_name1, group_name2, event_name, event_time,
 
   # commented out because outputting the entire data creates a dataset that is too large to output-check on it's own
   # write_csv(data_km_nozero, fs::path(output_dir, glue("km_{event_name}_{paste0(group_names, collapse='_')}.csv")))
-
   return(data_km_nozero)
 
 }
@@ -254,9 +319,9 @@ km_estimates <- function(data, group_name1, group_name2, event_name, event_time,
 #   km_estimates, data = data_prepared, event_name = "vax", event_time = "vax_time", event_indicator = "vax_indicator", resolution = temporal_resolution_km
 # )
 # km_estimates_vax("all", "all")
-# km_estimates_vax("all", "ageband7")
-# km_estimates_vax("ageband7", "all")
-# km_estimates_vax("ageband7", "sex")
+# km_estimates_vax("all", "ageband6")
+# km_estimates_vax("ageband6", "all")
+# km_estimates_vax("ageband6", "sex")
 
 ## Function to get km estimates over all subgroup combinations ----
 
@@ -284,7 +349,6 @@ get_all_km_estimates <- function(data, event_name, event_time, event_indicator, 
       cohort_end_milestone = (time == cohort_info$cohort_end_days) * 1L,
     )
 
-
   # Write table to CSV files
   # split up by level1 grouping variables, so as not to exceed 5,000 row limit
   iwalk(
@@ -303,7 +367,7 @@ get_all_km_estimates <- function(data, event_name, event_time, event_indicator, 
     rename(days_since_cohort_start = time) |>
     select(-cohort_end_milestone)
 
-  # # extremely irritatingly we have to split this output up because it's too big to be shown (5000 row limit)
+  # Code to split outputs if 5,000 rows exceeded
   # iwalk(
   #   split(km_estimates_milestones, km_estimates_milestones$milestone),
   #   ~ write_csv(.x, fs::path(output_dir, glue("km_estimates_{event_name}_milestones_{.y}.csv")))
@@ -319,19 +383,8 @@ get_all_km_estimates <- function(data, event_name, event_time, event_indicator, 
 cat("## Report KM cumulative incidence of vaccination in a standardised table", "\n")
 ## _______________________________________________________________________________________
 
-
 km_estimates_vax_table <- get_all_km_estimates(data = data_prepared, event_name =  "vax", event_time = "vax_time", event_indicator = "vax_indicator")
 km_estimates_vax_alive_table <- get_all_km_estimates(filter(data_prepared, alive_and_registered), "vax_alive", event_time = "vax_time", event_indicator = "vax_indicator")
-
-# consider raw KM plots for disease burden too
-# km_estimates_primary_care_table <- get_all_km_estimates(data = data_prepared, event_name = "primary_care", event_time = "primary_care_time", event_indicator = "primary_care_indicator")
-# km_estimates_admitted_table <- get_all_km_estimates(data = data_prepared, event_name = "admitted", event_time = "admitted_time", event_indicator = "admitted_indicator")
-
-
-# km_estimates_vax_table |>
-#   group_by(group1) |>
-#   summarise(n = n())
-
 
 # ________________________________
 # 2.A.i Kaplan-Meier plots (for server inspection only)
@@ -384,12 +437,9 @@ km_plot <- function(km_data, event_name, group1, group2) {
   # print(coverage_plot)
 }
 
-# km_plot(km_estimates_all |> filter(group1 == "all", group2 == "crd"), "vax", "all", "crd")
-
 ## _______________________________________________________________________________________
 cat("## Plot KM cumulative incidences of for inspection the server", "\n")
 ## _______________________________________________________________________________________
-
 
 # plot km estimates for inspection the server
 walk2(
@@ -404,43 +454,83 @@ walk2(
   }
 )
 
-
 #################################################################################################################
 # 2.B Disease burden
 # Incidence of disease-specific outcomes
 #################################################################################################################
 
+# Models:
+#   1 = unadjusted (primary estimate)
+#   2 = age (restricted cubic spline, 3 knots: rcs(age, 3)) + sex
+#   3 = model 2 + all OTHER core clinical subgroups (core subgroups only; for all other
+#       subgroups model 3 rows are output with NA estimates so every variable has the
+#       same set of rows/columns)
 
 # list of reference categories, which overwrites default reference category if needed
 contrasts_reference_levels <- list(
-  ageband7 = "65-84",
-  ageband18 = "65-69"
+  ageband6 = "65-84",
+  ageband12 = "65-74"
 )
 
-## Function to output HRs and IRRs for disease burden comparing different subgroups ----
-# note that parglm is faster, but produces an annoying warning that "'mustart' will not be used"
-# don't know how to get rid of it!
-
-adjusted_estimates <- function(data, subgroup, event_time, event_indicator, model = 1) {
-  # Model 1 is unadjusted
-  if (model == 1) {
-    poisson_formula <- as.formula(glue("event_indicator ~ {subgroup}"))
+## Build the model formula for a given subgroup and model number
+build_model_spec <- function(data, subgroup, model) {
+  
+  terms <- subgroup
+  
+  if (model >= 2) {
+    
+    # add sex unless sex is the subgroup of interest or does not vary
+    if (subgroup != "sex" && n_distinct(data$sex) > 1) {
+      terms <- c(terms, "sex")
+    }
+    
+    # add age as restricted cubic spline with 3 knots
+    # knots at the 10th, 50th and 90th percentiles of age among individuals in this stratum
+    # (the rms default for 3 knots but computed here explicitly)
+    # dropped if age is the subgroup, or if knots would coincide (too little age variation)
+    if (!(subgroup %in% age_subgroups)) {
+      age_knots <- quantile(data$age, probs = c(0.1, 0.5, 0.9), names = FALSE)
+      if (n_distinct(age_knots) == 3) {
+        terms <- c(
+          terms,
+          glue("rcs(age, c({age_knots[1]}, {age_knots[2]}, {age_knots[3]}))")
+        )
+      }
+    }
   }
 
-  # Model 2 adjusts for age using a restricted cubic spline with three knots and sex
-  if (model == 2) {
-    poisson_formula <- as.formula(glue("event_indicator ~ {subgroup} + sex + ns(age, 3)"))
-
-    # use age-splines unless age is the subgroup of interest
-    if (subgroup %in% c("ageband7", "ageband18", "age_group")) {
-      poisson_formula <- as.formula(glue("event_indicator ~ {subgroup} + sex"))
-    }
-
-    # do not adjust for sex if sex is the subgroup of interest
-    if (subgroup == "sex") {
-      poisson_formula <- as.formula(glue("event_indicator ~ {subgroup} + ns(age, 3)"))
-    }
+  if (model == 3) {
+    # all other core subgroups, dropping any that don't vary in this stratum
+    other_core <- setdiff(core_subgroups, subgroup)
+    other_core <- other_core[map_lgl(other_core, \(v) n_distinct(data[[v]]) > 1)]
+    terms <- c(terms, other_core)
   }
+  
+  list(
+    formula = as.formula(paste("event_indicator ~", paste(terms, collapse = " + "))),
+    covariates = paste(setdiff(terms, subgroup), collapse = "; ")
+  )
+}
+
+## Function to output IRs and IRRs for disease burden comparing levels of one subgroup ----
+adjusted_estimates <- function(data, subgroup, event_time, event_indicator, model = 1:3) {
+
+
+  # model 3 is only defined for core clinical subgroups
+  # for other subgroups, still output descriptive rows with NA estimates
+  model_applicable <- !(model == 3 && !(subgroup %in% core_subgroups))
+  
+  if (model_applicable) {
+    spec <- build_model_spec(data, subgroup, model)
+  } else {
+    spec <- list(formula = NULL, covariates = NA_character_)
+  }
+  
+  # variables needed for this model
+  model_vars <- unique(c(subgroup, "sex", "age", if (model == 3 && model_applicable) core_subgroups))
+  
+  # aggregate to covariate patterns: people, events, person-time
+ 
   # prepare dataset
   data_outcome <-
     data |>
@@ -449,8 +539,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
       event_indicator = .data[[event_indicator]]
     ) |>
     select(
-      all_of(subgroup),
-      sex, age,
+      all_of(model_vars),
       event_time,
       event_indicator
     ) |>
@@ -458,12 +547,12 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
     # then use these counts as weights when modelling / summarising later
     summarise(
       count = n(),
-      .by = all_of(c(subgroup, "sex", "age",  "event_time", "event_indicator"))
-    )
-
+      .by = all_of(c(model_vars, "event_time", "event_indicator"))
+      )
+  
   # how many possible values of the group are there
   n_values <- n_distinct(data_outcome[[subgroup]])
-
+  
   # all levels of variable that exist in the data, sorted by factor (or alphanumeric if not)
   # the first of these is the default reference level
   all_levels <- unique(as.character(sort(data_outcome[[subgroup]])))
@@ -484,9 +573,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
     subgroup_contrasts <- NULL
     reference_level <- all_levels[1]
   }
-
-  # cat(subgroup, "-", reference_level, " n=", n_values, " \n")
-
+  
   # -------------------------------
   # Descriptive summary
   # summarise total people, events, and person-time
@@ -501,7 +588,6 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
       n_obs = roundmid_any(sum(count), sdc_threshold),
       n_event = roundmid_any(sum(event_indicator * count), sdc_threshold),
       exposure = roundmid_any(sum(event_time * count), sdc_threshold),
-
       .by = label
     ) |>
     mutate(
@@ -515,7 +601,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
   # Incidence rate ratios (IRR)
   # -------------------------------
 
-  if (n_values > 1) {
+  if (n_values > 1 && model_applicable) {
 
     parglm_control <- parglm.control(maxit = 40, nthreads = 4)
 
@@ -527,7 +613,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
           data_outcome |>
             parglm(
               data = _,
-              formula = poisson_formula,
+              formula = spec$formula,
               family = poisson,
               offset = log(event_time),
               control = parglm_control,
@@ -535,7 +621,6 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
               contrasts = subgroup_contrasts
             ) |>
             broom.helpers::tidy_and_attach(tidy_fun = broom.helpers::tidy_parameters, ci_method = "wald") |>
-            # broom.helpers::tidy_add_reference_rows() |>
             broom.helpers::tidy_add_term_labels() |>
             filter(variable == subgroup) |>
             select(variable, label, estimate, std.error, conf.low, conf.high)
@@ -546,7 +631,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
           # or see "get_estimates_using_marginaleffects.R" script for a clue
         },
         error = function(e) {
-          cat("error for subgroup", subgroup, ":", conditionMessage(e), "\n")
+          cat("error for subgroup", subgroup, "model", model, ":", conditionMessage(e), "\n")
           data_summary |>
             select(variable, label) |>
             mutate(estimate = NA_real_, std.error = NA_real_, conf.low = NA_real_, conf.high = NA_real_)
@@ -564,16 +649,23 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
         variable, label, reference_row,
         n_obs, n_event, exposure,
         ir = n_event / exposure,
+        ir_1000py = calc_ir(n_event, exposure)$ir,
+        ir_1000py_lower = calc_ir(n_event, exposure)$ir_lower_ci,
+        ir_1000py_upper = calc_ir(n_event, exposure)$ir_upper_ci,        
         irr_unadjusted = ir / ir[reference_row],
         irr = exp(estimate),
         irr.low = exp(conf.low),
         irr.high = exp(conf.high),
         irr.ln.std.error = std.error,
+        model = model,
+        covariates = spec$covariates
       )
 
   } else {
-    data_poisson <- data_summary |> select(-contrast)
-  }
+    data_poisson <-
+      data_summary |>
+      mutate(estimate = NA_real_, std.error = NA_real_, conf.low = NA_real_, conf.high = NA_real_)
+}
 
   return(data_poisson)
 
@@ -593,7 +685,7 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
 ## function to loop over all group combinations and report IRR of level0 versus levelX ----
 # for a given outcome, loop over all groups combinations, obtaining contrasts for each using adjusted_estimates function, and combining into one file
 # specifically, compare level2 groups amongst each other, for all people meeting level1 group criteria
-get_all_estimates <- function(data, event_name, event_time, event_indicator) {
+get_all_estimates <- function(data, event_name, event_time, event_indicator, models = 1:3) {
 
   l1ticker <<- ""
 
@@ -617,10 +709,10 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator) {
             nest(.by = c(label1), .key = "group1_subset") |>
             mutate(
               estimates = map(group1_subset, \(group1_subset) {
-                bind_rows(
-                  adjusted_estimates(group1_subset, group2, event_time, event_indicator, model = 1),
-                  adjusted_estimates(group1_subset, group2, event_time, event_indicator, model = 2)
-                )
+                map(models, \(m) {
+                  adjusted_estimates(group1_subset, group2, event_time, event_indicator, model = m)
+                }) |>
+                  bind_rows()
               })
             ) |>
             select(-group1_subset) |>
@@ -638,11 +730,28 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator) {
       )
     ) |>
     unnest(estimates) |>
-    select(group1, label1, group2, label2, everything()) # reorder columns
+    select(group1, label1, group2, label2, model, everything()) # reorder columns
 
-  write_csv(estimates_list, fs::path(output_dir, glue("contrasts_{event_name}.csv")))
+  # reshape to one row per subgroup level, with model-specific columns side by side
+  # descriptive columns (counts, person-time, IR) are identical across models, so they
+  # identify the row; only the model-specific columns are spread out with an _m1/_m2/_m3 suffix
+  model_cols <- c("irr", "irr.low", "irr.high", "irr.ln.std.error", "covariates")
+  
+  estimates_wide <-
+    estimates_list |>
+    select(-model_applicable) |>
+    pivot_wider(
+      names_from = model,
+      values_from = all_of(model_cols),
+      names_glue = "{.value}_m{model}",
+      names_vary = "slowest"   # group columns by model
+    ) |>
+    select(-covariates_m1)     # always empty
 
-  # return(estimates_list)
+  # check the reshape didn't split any row (i.e. descriptive columns really were identical)
+  stopifnot(nrow(estimates_wide) * length(models) == nrow(estimates_list))
+  
+  write_csv(estimates_wide, fs::path(output_dir, glue("contrasts_{event_name}.csv")))
 
 }
 
@@ -654,10 +763,7 @@ cat("## Get all IRR contrasts for vaccination and burden", "\n")
 get_all_estimates(data_prepared, "vax", "vax_time", "vax_indicator")
 
 # IRR for vaccination, only looking at those who survived or stayed registered to the end of the season (collider bias! but matches UKHSA reports)
-get_all_estimates(
-  filter(data_prepared, alive_and_registered),
-  "vax_alive", "vax_time", "vax_indicator"
-)
+# get_all_estimates(filter(data_prepared, alive_and_registered), "vax_alive", "vax_time", "vax_indicator")
 
 # IRR for burden, in the usual way
 get_all_estimates(data_prepared, "primary_care", "primary_care_time", "primary_care_indicator")
@@ -665,89 +771,14 @@ get_all_estimates(data_prepared, "admitted", "admitted_time", "admitted_indicato
 get_all_estimates(data_prepared, "admitted_primary", "admitted_primary_time", "admitted_primary_indicator")
 get_all_estimates(data_prepared, "disease_death", "disease_death_time", "disease_death_indicator")
 
+# Exclusion of immunosuppressed
+get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "primary_care_no_IS", "primary_care_time", "primary_care_indicator")
+get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "admitted_no_IS", "admitted_time", "admitted_indicator")
+get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "admitted_primary_no_IS", "admitted_primary_time", "admitted_primary_indicator")
+get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "disease_death_no_IS", "disease_death_time", "disease_death_indicator")
 
-# ## Function to output length of stay quantiles for different subgroups ----
-# los_estimates <- function(data, subgroup, event_los) {
-#
-#   subgroup_name <- deparse(substitute(subgroup))
-#
-#   # prepare dataset
-#   data_outcome <-
-#     data |>
-#     mutate(
-#       event_los = .data[[event_los]]
-#     ) |>
-#     select(
-#       all_of(subgroup),
-#       event_los
-#     )
-#
-#   # LoS summary stats
-#
-#   data_los <-
-#     data_outcome |>
-#     mutate(
-#       variable = subgroup,
-#       label = .data[[subgroup]],
-#     ) |>
-#     summarise(
-#       n = roundmid_any(n(), sdc_threshold),
-#       n_at_least_1_event = roundmid_any(sum(!is.na(event_los)), sdc_threshold),
-#       median_los = quantile(event_los, 0.5, na.rm = TRUE),
-#       p10 = quantile(event_los, 0.1, na.rm = TRUE),
-#       p25 = quantile(event_los, 0.25, na.rm = TRUE),
-#       p75 = quantile(event_los, 0.75, na.rm = TRUE),
-#       p90 = quantile(event_los, 0.9, na.rm = TRUE),
-#
-#       .by = c(variable, label)
-#     )
-#
-#   return(data_los)
-# }
-#
-#
-# los_estimates(data_prepared, "sex", "admitted_los")
-#
-# ## function to get LoS across all group combinations ----
-# # for a given los outcome, loop over all groups combinations, obtaining los summaries for each using los_estimates function, and combining into one file
-# get_all_los_estimates <- function(data, event_name, event_los) {
-#
-#   estimates_list <-
-#     level_combos |>
-#     mutate(
-#       estimates = map2(
-#         group1, group2,
-#         \(group1, group2) {
-#
-#           data |>
-#             mutate(
-#               label1 = data[[group1]],
-#             ) |>
-#             nest(.by = c(label1), .key = "group1_subset") |>
-#             mutate(
-#               estimates = map(group1_subset, \(group1_subset) {
-#                 los_estimates(group1_subset, group2, event_los)
-#               })
-#             ) |>
-#             select(-group1_subset) |>
-#             unnest(estimates) |>
-#             select(-variable) |>
-#             rename(label2 = label) |>
-#             mutate(
-#               across(c(label1, label2), as.character)
-#             )
-#         }
-#       )
-#     ) |>
-#     unnest(estimates) |>
-#     select(group1, label1, group2, label2, everything()) # reorder columns
-#
-#   write_csv(estimates_list, fs::path(output_dir, glue("los_{event_name}.csv")))
-#
-# }
-#
-# ## _______________________________________________________________________________________
-# cat("## Get all LOS values for burden", "\n")
-# ## _______________________________________________________________________________________
-#
-# get_all_los_estimates(data_prepared, "admitted", "admitted_los")
+# Exclusion of immunosuppressed_crd
+get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "primary_care_no_IS_CRD", "primary_care_time", "primary_care_indicator")
+get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "admitted_no_IS_CRD", "admitted_time", "admitted_indicator")
+get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "admitted_primary_no_IS_CRD", "admitted_primary_time", "admitted_primary_indicator")
+get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "disease_death_no_IS_CRD", "disease_death_time", "disease_death_indicator")
