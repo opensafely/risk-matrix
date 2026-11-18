@@ -502,7 +502,7 @@ def ethnicity16(index_date):
      return ethnicity16
 
 def rural_urban_5(index_date):
-    urban_rural_all = addresses.for_patient_on(start_date).rural_urban_classification
+    urban_rural_all = addresses.for_patient_on(index_date).rural_urban_classification
     rural_urban_5 = case(
         when(urban_rural_all == 1).then("Urban major conurbation"),
         when(urban_rural_all == 2).then("Urban minor conurbation"),
