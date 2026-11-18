@@ -417,30 +417,6 @@ def ckd_stage_3to5(index_date):
     )
     return stage
 
-# Creatinine event
-def last_creatinine_event(index_date):
-    creatinine_event = (
-        clinical_events_ranges
-        .where(clinical_events_ranges.snomedct_code.is_in(codelists.creatinine))
-        .where(
-            clinical_events_ranges.date.is_on_or_between(
-                index_date - years(2), index_date
-            )
-        )
-        .where(
-            (clinical_events_ranges.comparator == "=")
-            | (clinical_events_ranges.comparator.is_null())
-        )
-        .where(
-            clinical_events_ranges.numeric_value.is_not_null()
-            & (clinical_events_ranges.numeric_value > 20.0)
-            & (clinical_events_ranges.numeric_value < 3000.0)
-        )
-        .sort_by(clinical_events_ranges.date)
-        .last_for_patient()
-    )
-    return creatinine_event
-
 # learning disability cateogry
 def learndis_cat(index_date): 
     

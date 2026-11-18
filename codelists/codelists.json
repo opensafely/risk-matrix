@@ -198,12 +198,6 @@
       "downloaded_at": "2025-10-21 10:27:18.897669Z",
       "sha": "40704496978d4b5353138ff41c1a4f0029313765"
     },
-    "nhsd-primary-care-domain-refsets-cre_cod.csv": {
-      "id": "nhsd-primary-care-domain-refsets/cre_cod/20250627",
-      "url": "https://www.opencodelists.org/codelist/nhsd-primary-care-domain-refsets/cre_cod/20250627/",
-      "downloaded_at": "2025-10-14 12:22:52.881295Z",
-      "sha": "c6f53558c19c41b025c564d408d03eaad883345b"
-    },
     "nhsd-primary-care-domain-refsets-copd_cod.csv": {
       "id": "nhsd-primary-care-domain-refsets/copd_cod/20250627",
       "url": "https://www.opencodelists.org/codelist/nhsd-primary-care-domain-refsets/copd_cod/20250627/",
