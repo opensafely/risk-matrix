@@ -106,6 +106,7 @@ cohort_info <-
   tribble(
     ~cohort_id,        ~target,      ~cohort,          ~cohort_start_date, ~cohort_end_date, ~age_threshold, ~clinical_priority,
 
+    "flu_2022_23",     "Influenza",  "2022/23",        "2022-09-01",       "2023-03-31",     65,             "primis_atrisk",
     "flu_2023_24",     "Influenza",  "2023/24",        "2023-09-01",       "2024-03-31",     65,             "primis_atrisk",
     "flu_2024_25",     "Influenza",  "2024/25",        "2024-09-01",       "2025-03-31",     65,             "primis_atrisk",
     "flu_2025_26",     "Influenza",  "2025/26",        "2025-09-01",       "2026-03-31",     65,             "primis_atrisk",
@@ -115,6 +116,7 @@ cohort_info <-
     "covid_jn1",       "COVID-19",   "JN.1 wave",      "2023-12-04",       "2024-03-31",     NA,             "primis_atrisk",
     "covid_2025_26",   "COVID-19",   "2025/26",        "2025-09-01",       "2026-03-31",     75,             "primis_atrisk",
 
+    "rsv_2022_23",     "RSV",        "2022/23",        "2022-09-01",       "2023-03-31",     NA,             "primis_atrisk",
     "rsv_2023_24",     "RSV",        "2023/24",        "2023-09-01",       "2024-03-31",     NA,             "primis_atrisk",
     "rsv_2024_25",     "RSV",        "2024/25",        "2024-09-01",       "2025-03-31",     NA,             "primis_atrisk",
     "rsv_2025_26",     "RSV",        "2025/26",        "2025-09-01",       "2026-03-31",     75,             "primis_atrisk" #,
@@ -301,20 +303,20 @@ factor_levels <-
       "Learning disability register"
     ),
     ckd_stage_3to5 = c(
-      "no ckd",
+      "no CKD",
       "3",
       "4",
       "5",
-      "ckd, without ckd3-5 code"
+      "CKD, without stage 3-5 code"
     ),
     ckd_rrt = c(
       "No CKD or RRT",
       "RRT (transplant)",
       "RRT (dialysis)",
-      "Stage 3",
-      "Stage 4",
-      "Stage 5",
-      "CKD, without stage 3-5 code"
+      "Stage 3 CKD",
+      "Stage 4 CKD",
+      "Stage 5 CKD",
+      "CKD without stage 3-5 code"
     )
 
   )
@@ -378,7 +380,7 @@ standardise_primis_and_extended_characteristics <-
       ckd_stage_3to5 == "5" ~ "Stage 5 CKD",
       ckd_stage_3to5 == "4" ~ "Stage 4 CKD",
       ckd_stage_3to5 == "3" ~ "Stage 3 CKD",
-      ckd_stage_3to5 == "ckd, without stage 3-5 code" ~ "CKD without stage 3-5 code",
+      ckd_stage_3to5 == "CKD, without stage 3-5 code" ~ "CKD without stage 3-5 code",
       TRUE ~ "No CKD or RRT"
     ) |> factor(levels = factor_levels$ckd_rrt, ordered = FALSE),
 
