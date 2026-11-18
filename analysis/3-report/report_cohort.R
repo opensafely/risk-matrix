@@ -20,7 +20,6 @@ library("rms")
 
 # Import custom functions
 source(here("analysis", "0-lib", "design.R"))
-source(here("analysis", "0-lib", "calc_ir.R"))
 
 args <- commandArgs(trailingOnly = TRUE)
 
@@ -128,7 +127,7 @@ baseline_table <- baseline_table %>%
   )
 
 write_csv(
-  baseline_vax_table,
+  baseline_table,
   fs::path(output_dir, "baseline_summary.csv")
 )
 
@@ -489,7 +488,7 @@ build_model_spec <- function(data, subgroup, model) {
     # (the rms default for 3 knots but computed here explicitly)
     # dropped if age is the subgroup, or if knots would coincide (too little age variation)
     if (!(subgroup %in% age_subgroups)) {
-      age_knots <- quantile(data$age, probs = c(0.1, 0.5, 0.9), names = FALSE)
+      age_knots <- round(quantile(data$age, probs = c(0.1, 0.5, 0.9), names = FALSE), 1)
       if (n_distinct(age_knots) == 3) {
         terms <- c(
           terms,
@@ -514,7 +513,6 @@ build_model_spec <- function(data, subgroup, model) {
 
 ## Function to output IRs and IRRs for disease burden comparing levels of one subgroup ----
 adjusted_estimates <- function(data, subgroup, event_time, event_indicator, model = 1:3) {
-
 
   # model 3 is only defined for core clinical subgroups
   # for other subgroups, still output descriptive rows with NA estimates
@@ -601,6 +599,20 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
   # Incidence rate ratios (IRR)
   # -------------------------------
 
+  # all-NA estimate frame, with exactly the columns a successful model fit returns.
+  # used wherever a model is not fitted, so that every subgroup x model combination
+  # returns an identically shaped result
+  na_estimates <-
+    data_summary |>
+    select(variable, label) |>
+    mutate(
+      estimate = NA_real_,
+      std.error = NA_real_,
+      conf.low = NA_real_,
+      conf.high = NA_real_
+    )
+  
+  
   if (n_values > 1 && model_applicable) {
 
     parglm_control <- parglm.control(maxit = 40, nthreads = 4)
@@ -632,40 +644,40 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
         },
         error = function(e) {
           cat("error for subgroup", subgroup, "model", model, ":", conditionMessage(e), "\n")
-          data_summary |>
-            select(variable, label) |>
-            mutate(estimate = NA_real_, std.error = NA_real_, conf.low = NA_real_, conf.high = NA_real_)
-        }
+          na_estimates
+          }
       )
-
-    # combine summary and model outputs
-    data_poisson <-
-      full_join(
-        data_summary,
-        data_poisson0,
-        by = c("variable", "label"),
-      ) |>
-      transmute(
-        variable, label, reference_row,
-        n_obs, n_event, exposure,
-        ir = n_event / exposure,
-        ir_1000py = calc_ir(n_event, exposure)$ir,
-        ir_1000py_lower = calc_ir(n_event, exposure)$ir_lower_ci,
-        ir_1000py_upper = calc_ir(n_event, exposure)$ir_upper_ci,        
-        irr_unadjusted = ir / ir[reference_row],
-        irr = exp(estimate),
-        irr.low = exp(conf.low),
-        irr.high = exp(conf.high),
-        irr.ln.std.error = std.error,
-        model = model,
-        covariates = spec$covariates
-      )
-
   } else {
-    data_poisson <-
-      data_summary |>
-      mutate(estimate = NA_real_, std.error = NA_real_, conf.low = NA_real_, conf.high = NA_real_)
-}
+    data_poisson0 <- na_estimates
+  }
+
+  # combine summary and model outputs
+  data_joined <-
+    full_join(
+      data_summary,
+      data_poisson0,
+      by = c("variable", "label"),
+    ) 
+  
+  # incidence rates per 1,000 person-years, calculated once
+  ir_calc <- calc_ir(data_joined$n_event, data_joined$exposure)
+  
+  data_poisson <- data_joined |>
+    transmute(
+      variable, label, reference_row,
+      n_obs, n_event, exposure,
+      ir = n_event / exposure,
+      ir_1000py = ir_calc$ir,
+      ir_1000py_lower = ir_calc$ir_lower_ci,
+      ir_1000py_upper = ir_calc$ir_upper_ci,
+      irr_unadjusted = ir / ir[reference_row],
+      irr = exp(estimate),
+      irr.low = exp(conf.low),
+      irr.high = exp(conf.high),
+      irr.ln.std.error = std.error,
+      model = as.integer(model),
+      covariates = spec$covariates
+    )
 
   return(data_poisson)
 
@@ -739,7 +751,6 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator, mod
   
   estimates_wide <-
     estimates_list |>
-    select(-model_applicable) |>
     pivot_wider(
       names_from = model,
       values_from = all_of(model_cols),
@@ -782,3 +793,18 @@ get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "primary_ca
 get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "admitted_no_IS_CRD", "admitted_time", "admitted_indicator")
 get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "admitted_primary_no_IS_CRD", "admitted_primary_time", "admitted_primary_indicator")
 get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "disease_death_no_IS_CRD", "disease_death_time", "disease_death_indicator")
+
+# RSV only: narrow phenotype for severe outcomes
+if ("admitted_narrow_indicator" %in% names(data_prepared)) {
+  get_all_estimates(data_prepared, "admitted_narrow", "admitted_narrow_time", "admitted_narrow_indicator")
+  get_all_estimates(data_prepared, "admitted_primary_narrow", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
+  get_all_estimates(data_prepared, "disease_death_narrow", "disease_death_narrow_time", "disease_death_narrow_indicator")
+  
+  get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "admitted_narrow_no_IS", "admitted_narrow_time", "admitted_narrow_indicator")
+  get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "admitted_primary_narrow_no_IS", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
+  get_all_estimates(data_prepared %>% filter(immunosuppressed==0), "disease_death_narrow_no_IS", "disease_death_narrow_time", "disease_death_narrow_indicator")
+  
+  get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "admitted_narrow_no_IS_CRD", "admitted_narrow_time", "admitted_narrow_indicator")
+  get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "admitted_primary_narrow_no_IS_CRD", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
+  get_all_estimates(data_prepared %>% filter(immunosuppressed_crd==0), "disease_death_narrow_no_IS_CRD", "disease_death_narrow_time", "disease_death_narrow_indicator")
+}

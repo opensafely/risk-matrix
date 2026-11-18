@@ -19,7 +19,7 @@ source(here("analysis", "0-lib", "design.R"))
 args <- commandArgs(trailingOnly = TRUE)
 
 if (length(args) == 0) {
-  cohort_id <- "flu_2023_24"
+  cohort_id <- "rsv_2023_24"
 } else {
   cohort_id <- args[[1]]
 }
@@ -210,6 +210,27 @@ data_prepared <-
       ~ fct_drop(fct_na_value_to_level(.x, level = "(Missing)"))
     )
   )
+
+# RSV only: narrow (RSV-specific) phenotype for severe outcomes
+narrow_outcomes <- c(
+  admitted_narrow         = "admitted_date_narrow",
+  admitted_primary_narrow = "admitted_primary_date_narrow",
+  disease_death_narrow    = "disease_death_date_narrow"
+)
+
+for (prefix in names(narrow_outcomes)) {
+  date_col <- narrow_outcomes[[prefix]]
+  if (!date_col %in% names(data_prepared)) next
+  data_prepared <- data_prepared |>
+    mutate(
+      "{prefix}_time" := as.integer(
+        pmin(.data[[date_col]], death_date, censor_date, na.rm = TRUE) - cohort_start_date
+      ) + 1L,
+      "{prefix}_indicator" :=
+        .data[[date_col]] <= pmin(death_date, censor_date, na.rm = TRUE) &
+        !is.na(.data[[date_col]])
+    )
+}
 
 # Checks ----
 

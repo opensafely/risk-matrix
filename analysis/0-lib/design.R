@@ -51,6 +51,30 @@ round_any <- function(x, to = 1) {
   }
 }
 
+# incidence rate per 1,000 person-years, with a 95% CI from the standard error of the log rate
+# `events` and `time` are the SDC-rounded counts produced by the calling code, so the
+# interval inherits that rounding and is nominal at small counts
+calc_ir <- function(events, time, per = 1000, days_per_year = 365.25, digits = 2) {
+  
+  ir <- per * days_per_year * events / time
+  se_log <- 1 / sqrt(events) # Inf when events == 0
+  z <- stats::qnorm(0.975)
+  
+  lower <- ir * exp(-z * se_log)
+  upper <- ir * exp(z * se_log)
+  
+  # the log rate is undefined with zero events: report a zero rate and no interval,
+  # rather than the NaN that 0 * exp(Inf) would give
+  lower[events == 0] <- 0
+  upper[events == 0] <- NA_real_
+  
+  tibble::tibble(
+    ir = round(ir, digits),
+    ir_lower_ci = round(lower, digits),
+    ir_upper_ci = round(upper, digits)
+  )
+}
+
 # get nth largest value from list
 nthmax <- function(x, n = 1) {
   dplyr::nth(sort(x, decreasing = TRUE), n)
@@ -317,6 +341,13 @@ factor_levels <-
       "Stage 4 CKD",
       "Stage 5 CKD",
       "CKD without stage 3-5 code"
+    ),
+    rural_urban_5 = c(
+      "Urban Major Conurbation",
+      "Urban Minor Conurbation",
+      "Urban City and Town",
+      "Rural Town and Fringe",
+      "Rural Village and Dispersed"
     )
 
   )
@@ -358,14 +389,7 @@ standardise_demographic_characteristics <-
       labels = c("1 (most deprived)", "2", "3", "4", "5 (least deprived)"),
       include.lowest = TRUE,
       right = FALSE
-    ),
-    rurality_classification = factor(case_when(
-      rural_urban == "1" ~ "Urban Major Conurbation",
-      rural_urban == "2" ~ "Urban Minor Conurbation",
-      rural_urban %in% c("3","4") ~ "Urban City and Town",
-      rural_urban %in% c("5","6") ~ "Rural Town and Fringe",
-      rural_urban %in% c("7","8") ~ "Rural Village and Dispersed",
-      TRUE ~ NA_character_))
+    )
   )
 
 ## CKD-RRT classification
@@ -433,7 +457,7 @@ sociodemographic_subgroups <- c(
   "region",
   "imd_quintile",
   "carehome_status",
-  "rurality_classification"
+  "rural_urban_5"
 )
 
 core_subgroups <- c(

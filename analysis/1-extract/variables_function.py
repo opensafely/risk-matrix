@@ -300,7 +300,7 @@ def primis_atrisk(index_date):
 def primis_variables(dataset, index_date, var_name_suffix=""):
     dataset.add_column(f"immunosuppressed{var_name_suffix}", is_immunosuppressed(index_date)) # immunosuppress grouped
     dataset.add_column(f"ckd{var_name_suffix}", has_ckd(index_date)) # chronic kidney disease
-    dataset.add_column(f"crd{var_name_suffix}", has_prior_event(codelists.resp_cov, index_date)) # chronic respiratory disease (inclduing asthma)
+    dataset.add_column(f"crd{var_name_suffix}", has_crd(index_date)) # chronic respiratory disease (inclduing asthma)
     dataset.add_column(f"diabetes{var_name_suffix}", has_diabetes(index_date)) # diabetes
     dataset.add_column(f"cld{var_name_suffix}", has_prior_event(codelists.cld, index_date)) # chronic liver disease
     dataset.add_column(f"chd{var_name_suffix}", has_prior_event(codelists.chd_cov, index_date)) # chronic heart disease
@@ -501,6 +501,21 @@ def ethnicity16(index_date):
      ethnicity16 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity16)
      return ethnicity16
 
+def rural_urban_5(index_date):
+    urban_rural_all = addresses.for_patient_on(start_date).rural_urban_classification
+    rural_urban_5 = case(
+        when(urban_rural_all == 1).then("Urban major conurbation"),
+        when(urban_rural_all == 2).then("Urban minor conurbation"),
+        when(urban_rural_all == 3).then("Urban city and town"),
+        when(urban_rural_all == 4).then("Urban city and town"),
+        when(urban_rural_all == 5).then("Rural town and fringe"),
+        when(urban_rural_all == 6).then("Rural town and fringe"),
+        when(urban_rural_all == 7).then("Rural village and dispersed"),
+        when(urban_rural_all == 8).then("Rural village and dispersed"),
+        when(urban_rural_all.is_null()).then("")
+    )
+    return rural_urban_5
+
 def demographic_variables(dataset, index_date, var_name_suffix=""):
     registration = practice_registrations.for_patient_on(index_date)
     dataset.add_column(f"sex{var_name_suffix}", patients.sex)
@@ -510,7 +525,7 @@ def demographic_variables(dataset, index_date, var_name_suffix=""):
     dataset.add_column(f"region{var_name_suffix}", registration.practice_nuts1_region_name)
     #dataset.add_column(f"stp{var_name_suffix}", registration.practice_stp)
     dataset.add_column(f"imd{var_name_suffix}", addresses.for_patient_on(index_date).imd_rounded)
-    dataset.add_column(f"rural_urban{var_name_suffix}", addresses.for_patient_on(index_date).rural_urban_classification)
+    dataset.add_column(f"rural_urban_5{var_name_suffix}", rural_urban_5(index_date))
     dataset.add_column(f"carehome_status{var_name_suffix}", carehome_status(index_date))
 
 # Target disease specific functions -------------------------------

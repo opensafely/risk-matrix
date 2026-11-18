@@ -260,7 +260,7 @@ carehome_primis = codelist_from_csv(
     column="code",
 )
 carehome_nhs_refset = codelist_from_csv(
-    "codelists/primis-covid19-vacc-uptake-longres.csv", 
+    "codelists/nhsd-primary-care-domain-refsets-carehome_cod.csv",
     column="code",
 )
 

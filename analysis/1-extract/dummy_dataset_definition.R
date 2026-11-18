@@ -133,12 +133,14 @@ for (cohort_id in cohort_ids) {
     missing_rate = ~0.05
   ),
   
-  rural_urban = bn_node(
+  rural_urban_5 = bn_node(
     variable_formula = ~ rfactor(n = ..n, levels = c(
-      "1", "2", "3", "4", "5", "6", "7", "8"), p = rep(0.125,8)
+      "Urban major conurbation", "Urban minor conurbation",
+      "Urban city and town", "Rural town and fringe"
+      "Rural village and dispersed"), p = rep(0.2,5)
     )
     ),
-
+  
   carehome_status = bn_node(
     ~ rbernoulli(n = ..n, p = if_else(age < 65, 0.01, 0.2)),
     needs = "age"
