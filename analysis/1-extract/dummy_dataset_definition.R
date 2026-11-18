@@ -134,8 +134,10 @@ for (cohort_id in cohort_ids) {
   ),
   
   rural_urban = bn_node(
-    ~ as.integer(sample(1:8, size = ..n, replace = TRUE))
-  ),
+    variable_formula = ~ rfactor(n = ..n, levels = c(
+      "1", "2", "3", "4", "5", "6", "7", "8"), p = rep(0.125,8)
+    )
+    ),
 
   carehome_status = bn_node(
     ~ rbernoulli(n = ..n, p = if_else(age < 65, 0.01, 0.2)),

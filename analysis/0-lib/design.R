@@ -360,11 +360,11 @@ standardise_demographic_characteristics <-
       right = FALSE
     ),
     rurality_classification = factor(case_when(
-      rural_urban == 1 ~ "Urban Major Conurbation",
-      rural_urban == 2 ~ "Urban Minor Conurbation",
-      rural_urban %in% c(3:4) ~ "Urban City and Town",
-      rural_urban %in% c(5:6) ~ "Rural Town and Fringe",
-      rural_urban %in% c(7:8) ~ "Rural Village and Dispersed",
+      rural_urban == "1" ~ "Urban Major Conurbation",
+      rural_urban == "2" ~ "Urban Minor Conurbation",
+      rural_urban %in% c("3","4") ~ "Urban City and Town",
+      rural_urban %in% c("5","6") ~ "Rural Town and Fringe",
+      rural_urban %in% c("7","8") ~ "Rural Village and Dispersed",
       TRUE ~ NA_character_))
   )
 

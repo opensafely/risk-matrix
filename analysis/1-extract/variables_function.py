@@ -510,7 +510,7 @@ def demographic_variables(dataset, index_date, var_name_suffix=""):
     dataset.add_column(f"region{var_name_suffix}", registration.practice_nuts1_region_name)
     #dataset.add_column(f"stp{var_name_suffix}", registration.practice_stp)
     dataset.add_column(f"imd{var_name_suffix}", addresses.for_patient_on(index_date).imd_rounded)
-    dataset.add_column(f"rural_urban{var_name_suffix}", addresses.for_patient_on(index_date).rural_urban)
+    dataset.add_column(f"rural_urban{var_name_suffix}", addresses.for_patient_on(index_date).rural_urban_classification)
     dataset.add_column(f"carehome_status{var_name_suffix}", carehome_status(index_date))
 
 # Target disease specific functions -------------------------------
