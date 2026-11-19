@@ -343,9 +343,9 @@ factor_levels <-
       "CKD without stage 3-5 code"
     ),
     rural_urban_5 = c(
-      "Urban city and town",
       "Urban major conurbation",
       "Urban minor conurbation",
+      "Urban city and town",
       "Rural town and fringe",
       "Rural village and dispersed"
     )

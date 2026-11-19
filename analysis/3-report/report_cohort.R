@@ -24,7 +24,7 @@ source(here("analysis", "0-lib", "design.R"))
 args <- commandArgs(trailingOnly = TRUE)
 
 if (length(args) == 0) {
-  cohort_id <- "flu_2023_24"
+  cohort_id <- "rsv_2023_24"
 } else {
   cohort_id <- args[[1]]
 }
@@ -358,13 +358,17 @@ get_all_km_estimates <- function(data, event_name, event_time, event_indicator, 
       cohort_end_milestone = (time == cohort_info$cohort_end_days) * 1L,
     )
 
-  # Write table to CSV files
-  # split up by level1 grouping variables, so as not to exceed 5,000 row limit
+  # Write table to CSV files, limited to group2 == all
+  km_estimates_table_sub <- km_estimates_table |> filter(group2=="all")
   # iwalk(
-  #   split(km_estimates_table, km_estimates_table$group1),
-  #   ~ write_csv(.x, fs::path(output_dir, glue("km_estimates_{event_name}_table_{.y}.csv")))
+  #    split(km_estimates_table_sub, km_estimates_table_sub$group1),
+  #    ~ write_csv(.x, fs::path(output_dir, glue("km_estimates_{event_name}_table_{.y}.csv")))
   # )
-
+  write_csv(
+    km_estimates_table_sub,
+    fs::path(output_dir, glue("km_estimates_{event_name}_table.csv"))
+  )
+  
   # Write table to a CSV file containing _only_ reporting milestones
   km_estimates_milestones <-
     km_estimates_table |>
@@ -723,7 +727,7 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator, mod
           summary_data <-
             data |>
             mutate(
-              label1 = .data[[group1]],
+              label1 = data[[group1]],
             ) |>
             nest(.by = c(label1), .key = "group1_subset") |>
             mutate(

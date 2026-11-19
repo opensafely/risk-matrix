@@ -314,7 +314,7 @@ for (cohort_id in cohort_ids) {
         ),
         admitted_primary_narrow_day = bn_node(
           ~ if_else(rbernoulli(n = ..n, p = 0.5) == 1, admitted_primary_day, NA_integer_),
-          needs = "admitted_primary_day"
+          needs = c("admitted_narrow_day", "admitted_primary_day")
         ),
         disease_death_narrow_day = bn_node(
           ~ if_else(rbernoulli(n = ..n, p = 0.5) == 1, disease_death_day, NA_integer_),
