@@ -55,19 +55,19 @@ round_any <- function(x, to = 1) {
 # `events` and `time` are the SDC-rounded counts produced by the calling code, so the
 # interval inherits that rounding and is nominal at small counts
 calc_ir <- function(events, time, per = 1000, days_per_year = 365.25, digits = 2) {
-  
+
   ir <- per * days_per_year * events / time
   se_log <- 1 / sqrt(events) # Inf when events == 0
   z <- stats::qnorm(0.975)
-  
+
   lower <- ir * exp(-z * se_log)
   upper <- ir * exp(z * se_log)
-  
+
   # the log rate is undefined with zero events: report a zero rate and no interval,
   # rather than the NaN that 0 * exp(Inf) would give
   lower[events == 0] <- 0
   upper[events == 0] <- NA_real_
-  
+
   tibble::tibble(
     ir = round(ir, digits),
     ir_lower_ci = round(lower, digits),
@@ -390,7 +390,7 @@ standardise_demographic_characteristics <-
       include.lowest = TRUE,
       right = FALSE
     ),
-    rural_urban_5 = factor(na_if(rural_urban_5, ""), levels = factor_levels$rural_urban_5)
+    rural_urban_5 = factor(rural_urban_5, levels = factor_levels$rural_urban_5)
   )
 
 ## CKD-RRT classification
@@ -419,7 +419,7 @@ standardise_primis_and_extended_characteristics <-
     sickle_cell_asplenia = (sickle_cell | asplenia),
 
     immunosuppressed_crd = (immunosuppressed | crd),
-    
+
     primis_atrisk_count = crd + chd + ckd + cld + cns_learndis + diabetes + immunosuppressed + asplenia + severe_obesity + smi,
 
     primis_atrisk_count_fct = cut(primis_atrisk_count, breaks = c(0,1,2,3,4,Inf), labels = c("0", "1", "2", "3", "4+"), right= FALSE)
