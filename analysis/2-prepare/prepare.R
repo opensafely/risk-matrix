@@ -19,7 +19,7 @@ source(here("analysis", "0-lib", "design.R"))
 args <- commandArgs(trailingOnly = TRUE)
 
 if (length(args) == 0) {
-  cohort_id <- "flu_2023_24"
+  cohort_id <- "rsv_2023_24"
 } else {
   cohort_id <- args[[1]]
 }
@@ -33,8 +33,8 @@ cohort_value <- cohort_info$cohort[[1]]
 cohort_start_date_value <- cohort_info$cohort_start_date[[1]]
 cohort_end_date_value <- cohort_info$cohort_end_date[[1]]
 cohort_end_days_value <- cohort_info$cohort_end_days[[1]]
-age_threshold_value <- cohort_info$age_threshold[[1]]
-clinical_priority_value <- cohort_info$clinical_priority[[1]]
+#age_threshold_value <- cohort_info$age_threshold[[1]]
+#clinical_priority_value <- cohort_info$clinical_priority[[1]]
 
 output_dir <- here("output", "2-prepare", glue("prepare_{cohort_id}"))
 fs::dir_create(output_dir)
@@ -42,10 +42,15 @@ fs::dir_create(output_dir)
 options(width = 200)
 
 # Import extract ----
-
-data_extract <- read_feather(
-  here("output", "1-extract", glue("extract_{cohort_id}.arrow"))
-)
+if (length(args) == 0) {
+  data_extract <- read_feather(
+     here("analysis", "1-extract", "dummy-data", glue("dummy_{cohort_id}.arrow"))
+   ) 
+} else {
+  data_extract <- read_feather(
+    here("output", "1-extract", glue("extract_{cohort_id}.arrow"))
+    )
+}
 
 capture.output(
   skimr::skim_without_charts(data_extract),
@@ -65,7 +70,7 @@ data_prepared <-
     cohort_start_date = cohort_start_date_value,
     cohort_end_date = cohort_end_date_value,
     cohort_end_days = cohort_end_days_value,
-    age_threshold = age_threshold_value,
+    #age_threshold = age_threshold_value,
 
     all = "All",
 
@@ -75,15 +80,15 @@ data_prepared <-
   mutate(
 
     # eligibility
-    age_above_eligibility_threshold = age >= age_threshold,
-
-    # used to choose if the at risk group is all clinical risk variables
-    # or just immunosuppressed people
-    clinical_priority = .data[[clinical_priority_value]],
-
-    clinical_priority_only = clinical_priority & !age_above_eligibility_threshold,
-
-    any_eligibility = age_above_eligibility_threshold | clinical_priority | carehome_status,
+    # age_above_eligibility_threshold = age >= age_threshold,
+    # 
+    # # used to choose if the at risk group is all clinical risk variables
+    # # or just immunosuppressed people
+    # clinical_priority = .data[[clinical_priority_value]],
+    # 
+    # clinical_priority_only = clinical_priority & !age_above_eligibility_threshold,
+    # 
+    # any_eligibility = age_above_eligibility_threshold | clinical_priority | carehome_status,
 
     # baseline vaccination history
     baseline_vax_status = case_when(
@@ -129,6 +134,15 @@ data_prepared <-
     vax_indicator =
       first_vax_date_after_start_date <= pmin(death_date, censor_date, na.rm = TRUE) &
       !is.na(first_vax_date_after_start_date),
+   
+    # primary care outcome: admitted
+    primary_care_time = as.integer(
+      pmin(primary_care_date, death_date, censor_date, na.rm = TRUE) -
+        cohort_start_date
+    ) + 1L,
+    primary_care_indicator =
+      primary_care_date <= pmin(death_date, censor_date, na.rm = TRUE) &
+      !is.na(primary_care_date),
 
     # severe outcome: admitted
     admitted_time = as.integer(
@@ -197,11 +211,33 @@ data_prepared <-
     )
   )
 
+# RSV only: narrow (RSV-specific) phenotype for severe outcomes
+narrow_outcomes <- c(
+  admitted_narrow         = "admitted_date_narrow",
+  admitted_primary_narrow = "admitted_primary_date_narrow",
+  disease_death_narrow    = "disease_death_date_narrow"
+)
+
+for (prefix in names(narrow_outcomes)) {
+  date_col <- narrow_outcomes[[prefix]]
+  if (!date_col %in% names(data_prepared)) next
+  data_prepared <- data_prepared |>
+    mutate(
+      "{prefix}_time" := as.integer(
+        pmin(.data[[date_col]], death_date, censor_date, na.rm = TRUE) - cohort_start_date
+      ) + 1L,
+      "{prefix}_indicator" :=
+        .data[[date_col]] <= pmin(death_date, censor_date, na.rm = TRUE) &
+        !is.na(.data[[date_col]])
+    )
+}
+
 # Checks ----
 
 time_check <- data_prepared |>
   summarise(
     min_vax_time = min(vax_time, na.rm = TRUE),
+    min_primary_care_time = min(primary_care_time, na.rm = TRUE),
     min_admitted_time = min(admitted_time, na.rm = TRUE),
     min_admitted_primary_time = min(admitted_primary_time, na.rm = TRUE),
     min_disease_death_time = min(disease_death_time, na.rm = TRUE),
@@ -222,7 +258,7 @@ write_feather(
   fs::path(output_dir, glue("prepare_{cohort_id}.arrow"))
 )
 
-
+#TODO: check this for RSV / FLU
 vax_prod_table <- bind_rows(
   data_prepared |>
     transmute(
@@ -241,18 +277,22 @@ vax_prod_table <- bind_rows(
   filter(!is.na(date)) |>
   mutate(
     year = year(date),
-    period = case_when(
-      month(date) %in% 9:12 ~ paste0("Sep-Feb/", year(date)),
-      month(date) %in% 1:2  ~ paste0("Sep-Feb/", year(date) - 1),
-      month(date) %in% 3:8  ~ paste0("Feb-Aug/", year(date)),
-      TRUE ~ NA_character_
-    )
+    month_year = floor_date(date, "month")
+    # period = case_when(
+    #   month(date) %in% 9:12 ~ paste0("Sep-Feb/", year(date)),
+    #   month(date) %in% 1:2  ~ paste0("Sep-Feb/", year(date) - 1),
+    #   month(date) %in% 3:8  ~ paste0("Mar-Aug/", year(date)),
+    #   TRUE ~ NA_character_
+    # )
   ) |>
-  count(indicador, period, product, name = "n_round10") |>
+  count(indicador, month_year, product, name = "n_round10") |>
   mutate(
     n_round10 = round_any(n_round10, sdc_threshold
   )) |>
-  arrange(indicador, period, product)
+  arrange(indicador, month_year, product) %>%
+  mutate(
+    month_year = format(month_year, "%b %Y")
+  )
 
 write_csv(
   vax_prod_table,

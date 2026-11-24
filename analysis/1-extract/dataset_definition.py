@@ -76,9 +76,12 @@ eligibility_age = patients.age_on(age_calculation_date)
 
 dataset.define_population(
     registered
-    & (registered_start_date <= (cohort_start_date - weeks(12)))
+    &  (
+        (eligibility_age < 1)
+        | (registered_start_date <= (cohort_start_date - weeks(12)))
+    )
     & alive
-    & (eligibility_age >= 12)
+    & (eligibility_age >= 0)
     & (eligibility_age <= 104)
     & patients.sex.is_in(["male", "female"])
 )
@@ -105,18 +108,21 @@ dataset.death_date = ons_deaths.date
 # ------------------------------------------------------------------------------
 # Disease-specific variables: vaccination + outcomes
 # ------------------------------------------------------------------------------
-# TODO: add mild outcomes
 if target == "COVID-19":
     add_target_vaccines(dataset, ["SARS-2 CORONAVIRUS"], cohort_start_date, cohort_end_date)
-    add_target_sev_outcomes(dataset, codelists.covid_icd10, cohort_start_date, cohort_end_date)
+    add_primary_care_outcomes(dataset, codelists.covid_snomed_codelist, cohort_start_date, cohort_end_date)    
+    add_sev_outcomes(dataset, codelists.covid_icd10, cohort_start_date, cohort_end_date)
 
 elif target == "Influenza":
     add_target_vaccines(dataset, ["INFLUENZA"], cohort_start_date, cohort_end_date)
-    add_target_sev_outcomes(dataset, codelists.flu_icd10, cohort_start_date, cohort_end_date)
+    add_primary_care_outcomes(dataset, codelists.flu_narrow_snomed_codelist, cohort_start_date, cohort_end_date)  
+    add_sev_outcomes(dataset, codelists.flu_icd10, cohort_start_date, cohort_end_date)
 
 elif target == "RSV":
     add_target_vaccines(dataset, ["HUMAN RESPIRATORY SYNCYTIAL VIRUS"], cohort_start_date, cohort_end_date)
-    add_target_sev_outcomes(dataset, codelists.rsv_icd10, cohort_start_date, cohort_end_date)
+    add_primary_care_outcomes(dataset, codelists.rsv_narrow_snomed_codelist, cohort_start_date, cohort_end_date)      
+    add_sev_outcomes(dataset, codelists.rsv_icd10, cohort_start_date, cohort_end_date)
+    add_sev_outcomes(dataset, codelists.rsv_icd10_narrow, cohort_start_date, cohort_end_date, var_name_suffix="_narrow")
 
 #TODO: Zoster
 

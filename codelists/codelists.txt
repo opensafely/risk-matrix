@@ -1,6 +1,5 @@
-# Ethnicity
+#Ethnicity
 opensafely/ethnicity-snomed-0removed/22911876
-
 
 #Asthma
 primis-covid19-vacc-uptake/astadm/v2.5
@@ -55,73 +54,43 @@ primis-covid19-vacc-uptake/bmi/v2.5
 primis-covid19-vacc-uptake/bmi_stage/v2.5
 primis-covid19-vacc-uptake/sev_obesity/v2.5
 
-
 #Learning disability
 primis-covid19-vacc-uptake/learndis/v2.5
 
-# care home residency status
+#Care home residency status
 primis-covid19-vacc-uptake/longres/v2.5
-
-#carehome employment status
-primis-covid19-vacc-uptake/carehome/v2.5
-primis-covid19-vacc-uptake/nursehome/v2.5
-primis-covid19-vacc-uptake/domcare/v2.5
-
-# HIV/SIDA
-nhsd/hiv-aids-snomed/68ca529e
-
-#Solid organ transplant
-opensafely/solid-organ-transplantation-snomed/2020-04-10
-
-#Cancer
-#Non haem-lung cancer
-opensafely/cancer-excluding-lung-and-haematological-snomed/2020-04-15
-
-#Chemotherapy
-opensafely/chemotherapy-or-radiotherapy-snomed/2020-04-15
-
-#Lung cancer
-opensafely/lung-cancer-snomed/2020-04-15
-
-# Haem cancer
-opensafely/haematological-cancer-snomed/2020-04-15
-
-#Other
-#nhsd/haematopoietic-stem-cell-transplant-snomed/3ec3ac16
-#nhsd/haematological-malignancies-snomed/31a49191
-#nhsd/sickle-spl-atriskv4-snomed-ct/7083ed37
-
-# care home residency, NHS refset
 nhsd-primary-care-domain-refsets/carehome_cod/20250627
 
-# Extended subgroups
+#Extended subgroups
 nhsd-primary-care-domain-refsets/renaltransp_cod/20250627
 nhsd-primary-care-domain-refsets/dialysis_cod/20250627
-nhsd-primary-care-domain-refsets/cre_cod/20250627
 nhsd-primary-care-domain-refsets/copd_cod/20250627
 nhsd-primary-care-domain-refsets/ds_cod/20250627
 nhsd/sickle-spl-atriskv4-snomed-ct/7083ed37
 nhsd-primary-care-domain-refsets/cirrhosis_cod/20250627
 
-# Cochlear implant
+#Cochlear implant
 nhsd-primary-care-domain-refsets/cocimpatrisk1_cod/20250912
 nhsd-primary-care-domain-refsets/cocimprematrisk1_cod/20250912
 
-# Cystic fibrosis
+#Cystic fibrosis
 opensafely/cystic-fibrosis-snomed/1eb02212
 
-# Cerebrospinal fluid leak
+#Cerebrospinal fluid leak
 nhsd-primary-care-domain-refsets/csflatrisk1_cod/20250912
 
-# Homeless
-primis-covid19-vacc-uptake/homeless_cod/v2.5
-primis-covid19-vacc-uptake/reside_cod/v2.5
+#Rheumatoid arthritis
+nhsd-primary-care-domain-refsets/rarth_cod/20260630
 
+## Outcomes
 
-# Outcomes
-
-# flu
+#Flu
+opensafely/influenza-identification-primary-care/4b14d7ab/
 opensafely/influenza-identification-secondary-care/7d33be15
 
-# rsv 
+#RSV 
+opensafely/rsv-identification-primary-care/13907155/
 opensafely/rsv-identification-secondary-care/5ebecaf4
+
+#COVID
+opensafely/covid-19-identification-primary-care/507a5797/

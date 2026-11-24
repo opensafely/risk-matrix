@@ -74,69 +74,78 @@ for (cohort_id in cohort_ids) {
   # ..n as a place holder for the length of the variable
 
   sim_list <- lst(
-  # demographics
-  sex = bn_node(
-    ~ rfactor(n = ..n, levels = c("female", "male", "intersex", "unknown"), p = c(0.51, 0.49, 0, 0))
-  ),
-
-  age = bn_node(
-    ~ as.integer(rnormt(n = ..n, mean = 60, sd = 14, range = c(12, 104)))
-  ),
-
-  ethnicity5 = bn_node(variable_formula = ~ ethnicity_16_to_5(ethnicity16), needs = "ethnicity16"),
-  ethnicity16 = bn_node(
-    variable_formula = ~ rfactor(
-      n = ..n,
-      levels = c(
-        "White - British",
-        "White - Irish",
-        "White - Any other White background",
-        "Mixed - White and Black Caribbean",
-        "Mixed - White and Black African",
-        "Mixed - White and Asian",
-        "Mixed - Any other mixed background",
-        "Asian or Asian British - Indian",
-        "Asian or Asian British - Pakistani",
-        "Asian or Asian British - Bangladeshi",
-        "Asian or Asian British - Any other Asian background",
-        "Black or Black British - Caribbean",
-        "Black or Black British - African",
-        "Black or Black British - Any other Black background",
-        "Other Ethnic Groups - Chinese",
-        "Other Ethnic Groups - Any other ethnic group"
-      ),
-      p = c(
-        0.5, 0.05, 0.05, # White
-        0.025, 0.025, 0.025, 0.025, # Mixed
-        0.025, 0.025, 0.025, 0.025, # Asian
-        0.033, 0.033, 0.034, # Black
-        0.05, 0.05 # Other
-      )
+    # demographics
+    sex = bn_node(
+      ~ rfactor(n = ..n, levels = c("female", "male", "intersex", "unknown"), p = c(0.51, 0.49, 0, 0))
     ),
-    missing_rate = ~0.1,
-  ),
 
-  region = bn_node(
-    variable_formula = ~ rfactor(n = ..n, levels = c(
-      "North East", "North West", "Yorkshire and The Humber",
-      "East Midlands", "West Midlands", "East",
-      "London", "South East", "South West"
-    ), p = c(0.2, 0.2, 0.3, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05))
-  ),
+    age = bn_node(
+      ~ as.integer(rnormt(n = ..n, mean = 40, sd = 20, range = c(0, 104)))
+    ),
 
-  stp = bn_node(
-    ~ factor(as.integer(runif(n = ..n, 1, 36)), levels = 1:36)
-  ),
+    ethnicity5 = bn_node(variable_formula = ~ ethnicity_16_to_5(ethnicity16), needs = "ethnicity16"),
+    ethnicity16 = bn_node(
+      variable_formula = ~ rfactor(
+        n = ..n,
+        levels = c(
+          "White - British",
+          "White - Irish",
+          "White - Any other White background",
+          "Mixed - White and Black Caribbean",
+          "Mixed - White and Black African",
+          "Mixed - White and Asian",
+          "Mixed - Any other mixed background",
+          "Asian or Asian British - Indian",
+          "Asian or Asian British - Pakistani",
+          "Asian or Asian British - Bangladeshi",
+          "Asian or Asian British - Any other Asian background",
+          "Black or Black British - Caribbean",
+          "Black or Black British - African",
+          "Black or Black British - Any other Black background",
+          "Other Ethnic Groups - Chinese",
+          "Other Ethnic Groups - Any other ethnic group"
+        ),
+        p = c(
+          0.5, 0.05, 0.05, # White
+          0.025, 0.025, 0.025, 0.025, # Mixed
+          0.025, 0.025, 0.025, 0.025, # Asian
+          0.033, 0.033, 0.034, # Black
+          0.05, 0.05 # Other
+        )
+      ),
+      missing_rate = ~0.1,
+    ),
 
-  imd = bn_node(
-    ~ as.integer(plyr::round_any(runif(n = ..n, 100, 32000), 100)),
-    missing_rate = ~0.05
-  ),
+    region = bn_node(
+      variable_formula = ~ rfactor(n = ..n, levels = c(
+        "North East", "North West", "Yorkshire and The Humber",
+        "East Midlands", "West Midlands", "East",
+        "London", "South East", "South West"
+      ), p = c(0.2, 0.2, 0.3, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05))
+    ),
 
-  carehome_status = bn_node(
-    ~ rbernoulli(n = ..n, p = if_else(age < 65, 0.01, 0.2)),
-    needs = "age"
-  ),
+    # stp = bn_node(
+    #   ~ factor(as.integer(runif(n = ..n, 1, 36)), levels = 1:36)
+    # ),
+
+    imd = bn_node(
+      ~ as.integer(plyr::round_any(runif(n = ..n, 100, 32000), 100)),
+      missing_rate = ~0.05
+    ),
+
+    rural_urban_5 = bn_node(
+      variable_formula = ~ rfactor(n = ..n, levels = c(
+        "Urban major conurbation", "Urban minor conurbation",
+        "Urban city and town", "Rural town and fringe",
+        "Rural village and dispersed"), p = rep(0.2,5)
+      ),
+      missing_rate = ~0.05
+    ),
+
+    carehome_status = bn_node(
+      ~ rbernoulli(n = ..n, p = if_else(age < 65, 0.01, 0.2)),
+      needs = "age"
+    ),
     # PRIMIS
     crd = bn_node(
       ~ rbernoulli(n = ..n, p = 0.02),
@@ -174,13 +183,25 @@ for (cohort_id in cohort_ids) {
     primis_atrisk = bn_node(
       ~ crd | chd | ckd | cld | cns | learndis | diabetes | immunosuppressed | asplenia | severe_obesity | smi,
     ),
+    primis_atrisk_count = bn_node(
+      ~ crd + chd + ckd + cld + (cns | learndis) + diabetes +
+        immunosuppressed + asplenia + severe_obesity + smi
+    ),
+    primis_atrisk_count_fct = bn_node(
+      ~ cut(
+        primis_atrisk_count,
+        breaks = c(0, 1, 2, 3, 4, Inf),
+        labels = c("0", "1", "2", "3", "4+"),
+        right = FALSE
+      )
+    ),
     # extended subgroups
     rrt_cat = bn_node(
       variable_formula = ~ rfactor(n = ..n, levels = c(
         "0 no RRT",
         "1 dialysis",
         "2 transplant"),
-      p = c(0.98, 0.01, 0.01)
+        p = c(0.98, 0.01, 0.01)
       )),
     ckd_stage_3to5 = bn_node(
       variable_formula = ~ rfactor(n = ..n, levels = c(
@@ -189,7 +210,7 @@ for (cohort_id in cohort_ids) {
         "4",
         "5",
         "CKD, without stage 3-5 code"),
-      p = c(0.90, 0.06, 0.02, 0.01, 0.01)
+        p = c(0.90, 0.06, 0.02, 0.01, 0.01)
       )),
     # creatinine_umol = bn_node(
     #   ~ as.numeric(runif(n = ..n, 20.0, 3000.0)),
@@ -206,7 +227,7 @@ for (cohort_id in cohort_ids) {
         "Down's syndrome",
         "Other learning disability",
         "Learning disability register"),
-      p = c(0.80, 0.05, 0.1, 0.05)
+        p = c(0.80, 0.05, 0.1, 0.05)
       )),
     sickle_cell = bn_node(
       ~ rbernoulli(n = ..n, p = 0.02),
@@ -223,57 +244,86 @@ for (cohort_id in cohort_ids) {
     csfl = bn_node(
       ~ rbernoulli(n = ..n, p = 0.02),
     ),
-    homeless = bn_node(
+    rheum_arth = bn_node(
       ~ rbernoulli(n = ..n, p = 0.02),
     ),
-  # registration
-  deregistered_day = bn_node(
-    ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 1200)),
-    missing_rate = ~0.99
-  ),
+    # homeless = bn_node(
+    #   ~ rbernoulli(n = ..n, p = 0.02),
+    # ),
+    # registration
+    deregistered_day = bn_node(
+      ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 1200)),
+      missing_rate = ~0.99
+    ),
 
-  # all-cause death
-  death_day = bn_node(
-    ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 3000)),
-    missing_rate = ~0.98
-  ),
+    # all-cause death
+    death_day = bn_node(
+      ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 3000)),
+      missing_rate = ~0.98
+    ),
 
-  # disease-specific vaccination variables
-  last_vax_date_before_start_day = bn_node(
-    ~ runif(n = ..n, snapshot_day - 400, snapshot_day - 1),
-    missing_rate = ~0.5
-  ),
+    # disease-specific vaccination variables
+    last_vax_date_before_start_day = bn_node(
+      ~ runif(n = ..n, snapshot_day - 400, snapshot_day - 1),
+      missing_rate = ~0.5
+    ),
 
-  last_vax_product_before_start = bn_node(
-    ~ rcat(n = ..n, c("prodA", "prodB"), c(0.5, 0.5)),
-    needs = "last_vax_date_before_start_day"
-  ),
+    last_vax_product_before_start = bn_node(
+      ~ rcat(n = ..n, c("prodA", "prodB"), c(0.5, 0.5)),
+      needs = "last_vax_date_before_start_day"
+    ),
 
-  first_vax_date_after_start_day = bn_node(
-    ~ runif(n = ..n, snapshot_day, snapshot_day + 200),
-    missing_rate = ~0.5
-  ),
+    first_vax_date_after_start_day = bn_node(
+      ~ runif(n = ..n, snapshot_day, snapshot_day + 200),
+      missing_rate = ~0.5
+    ),
 
-  first_vax_product_after_start = bn_node(
-    ~ rcat(n = ..n, c("prodA", "prodB"), c(0.5, 0.5)),
-    needs = "first_vax_date_after_start_day"
-  ),
-  # disease-specific severe outcomes
-  admitted_day = bn_node(
-    ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 300)),
-    missing_rate = ~0.7
-  ),
+    first_vax_product_after_start = bn_node(
+      ~ rcat(n = ..n, c("prodA", "prodB"), c(0.5, 0.5)),
+      needs = "first_vax_date_after_start_day"
+    ),
+    # disease-specific primary care outcome
+    primary_care_day = bn_node(
+      ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 300)),
+      missing_rate = ~0.5
+    ),
+    # disease-specific severe outcomes
+    admitted_day = bn_node(
+      ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 300)),
+      missing_rate = ~0.7
+    ),
 
-  admitted_primary_day = bn_node(
-    ~ if_else(rbernoulli(n = ..n, p = 0.5) == 1, admitted_day, NA_integer_),
-    needs = "admitted_day"
-  ),
+    admitted_primary_day = bn_node(
+      ~ if_else(rbernoulli(n = ..n, p = 0.5) == 1, admitted_day, NA_integer_),
+      needs = "admitted_day"
+    ),
 
-  disease_death_day = bn_node(
-    ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 300)),
-    missing_rate = ~0.95
+    disease_death_day = bn_node(
+      ~ as.integer(runif(n = ..n, snapshot_day, snapshot_day + 300)),
+      missing_rate = ~0.95
+    )
   )
-)
+
+  # RSV only: narrow (RSV-specific) phenotype for severe outcomes
+  if (target == "RSV") {
+    sim_list <- c(
+      sim_list,
+      lst(
+        admitted_narrow_day = bn_node(
+          ~ if_else(rbernoulli(n = ..n, p = 0.5) == 1, admitted_day, NA_integer_),
+          needs = "admitted_day"
+        ),
+        admitted_primary_narrow_day = bn_node(
+          ~ if_else(rbernoulli(n = ..n, p = 0.5) == 1, admitted_primary_day, NA_integer_),
+          needs = c("admitted_narrow_day", "admitted_primary_day")
+        ),
+        disease_death_narrow_day = bn_node(
+          ~ if_else(rbernoulli(n = ..n, p = 0.5) == 1, disease_death_day, NA_integer_),
+          needs = "disease_death_day"
+        )
+      )
+    )
+  }
 
   # check and create the simulation object, including all dependencies, topological orders, etc
   bn <- bn_create(sim_list, known_variables = known_variables)
@@ -299,10 +349,20 @@ for (cohort_id in cohort_ids) {
     mutate(across(ends_with("_day"), ~ as.Date(as.character(snapshot_date + .)))) %>%
     rename_with(~ str_replace(., "_day", "_date"), ends_with("_day"))
 
+  # match the extract's column names: add_sev_outcomes() appends the suffix after the
+  # column name, giving admitted_date_narrow rather than admitted_narrow_date
+  if (target == "RSV") {
+    dummydata_processed <- dummydata_processed |>
+      rename(
+        admitted_date_narrow         = admitted_narrow_date,
+        admitted_primary_date_narrow = admitted_primary_narrow_date,
+        disease_death_date_narrow    = disease_death_narrow_date
+      )
+  }
 
   # save the dataset in arrow format
-
   write_feather(dummydata_processed, sink = here("analysis", "1-extract", "dummy-data", glue("dummy_{cohort_id}.arrow")))
 
 
 }
+

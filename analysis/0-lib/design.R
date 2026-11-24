@@ -51,6 +51,30 @@ round_any <- function(x, to = 1) {
   }
 }
 
+# incidence rate per 1,000 person-years, with a 95% CI from the standard error of the log rate
+# `events` and `time` are the SDC-rounded counts produced by the calling code, so the
+# interval inherits that rounding and is nominal at small counts
+calc_ir <- function(events, time, per = 1000, days_per_year = 365.25, digits = 2) {
+
+  ir <- per * days_per_year * events / time
+  se_log <- 1 / sqrt(events) # Inf when events == 0
+  z <- stats::qnorm(0.975)
+
+  lower <- ir * exp(-z * se_log)
+  upper <- ir * exp(z * se_log)
+
+  # the log rate is undefined with zero events: report a zero rate and no interval,
+  # rather than the NaN that 0 * exp(Inf) would give
+  lower[events == 0] <- 0
+  upper[events == 0] <- NA_real_
+
+  tibble::tibble(
+    ir = round(ir, digits),
+    ir_lower_ci = round(lower, digits),
+    ir_upper_ci = round(upper, digits)
+  )
+}
+
 # get nth largest value from list
 nthmax <- function(x, n = 1) {
   dplyr::nth(sort(x, decreasing = TRUE), n)
@@ -106,6 +130,7 @@ cohort_info <-
   tribble(
     ~cohort_id,        ~target,      ~cohort,          ~cohort_start_date, ~cohort_end_date, ~age_threshold, ~clinical_priority,
 
+    "flu_2022_23",     "Influenza",  "2022/23",        "2022-09-01",       "2023-03-31",     65,             "primis_atrisk",
     "flu_2023_24",     "Influenza",  "2023/24",        "2023-09-01",       "2024-03-31",     65,             "primis_atrisk",
     "flu_2024_25",     "Influenza",  "2024/25",        "2024-09-01",       "2025-03-31",     65,             "primis_atrisk",
     "flu_2025_26",     "Influenza",  "2025/26",        "2025-09-01",       "2026-03-31",     65,             "primis_atrisk",
@@ -115,13 +140,16 @@ cohort_info <-
     "covid_jn1",       "COVID-19",   "JN.1 wave",      "2023-12-04",       "2024-03-31",     NA,             "primis_atrisk",
     "covid_2025_26",   "COVID-19",   "2025/26",        "2025-09-01",       "2026-03-31",     75,             "primis_atrisk",
 
+    "rsv_2022_23",     "RSV",        "2022/23",        "2022-09-01",       "2023-03-31",     NA,             "primis_atrisk",
     "rsv_2023_24",     "RSV",        "2023/24",        "2023-09-01",       "2024-03-31",     NA,             "primis_atrisk",
     "rsv_2024_25",     "RSV",        "2024/25",        "2024-09-01",       "2025-03-31",     NA,             "primis_atrisk",
     "rsv_2025_26",     "RSV",        "2025/26",        "2025-09-01",       "2026-03-31",     75,             "primis_atrisk" #,
 
-    # "zoster_2010_11",  "Zoster",     "2010/11",        "2010-09-01",       "2011-08-31",     70,             "primis_atrisk",
-    # "zoster_2011_12",  "Zoster",     "2011/12",        "2011-09-01",       "2012-08-31",     70,             "primis_atrisk",
-    # "zoster_2012_13",  "Zoster",     "2012/13",        "2012-09-01",       "2013-08-31",     70,             "primis_atrisk",
+    # "zoster_2018_19",  "Zoster",     "2018/19",        "2018-09-01",       "2019-08-31",     70,             "primis_atrisk",
+    # "zoster_2019_20",  "Zoster",     "2019/20",        "2019-09-01",       "2020-08-31",     70,             "primis_atrisk",
+    # "zoster_2020_21",  "Zoster",     "2020/21",        "2020-09-01",       "2021-08-31",     70,             "primis_atrisk",
+    # "zoster_2021_22",  "Zoster",     "2021/22",        "2021-09-01",       "2022-08-31",     70,             "primis_atrisk",
+    # "zoster_2022_23",  "Zoster",     "2022/23",        "2022-09-01",       "2023-08-31",     70,             "primis_atrisk",
     # "zoster_2023_24",  "Zoster",     "2023/24",        "2023-09-01",       "2024-08-31",     65,             "primis_atrisk",
     # "zoster_2024_25",  "Zoster",     "2024/25",        "2024-09-01",       "2025-08-31",     65,             "primis_atrisk",
     # "zoster_2025_26",  "Zoster",     "2025/26",        "2025-09-01",       "2026-08-31",     65,             "primis_atrisk"
@@ -156,7 +184,6 @@ vax_product_lookup <- c(
   "pfizer_unspecified" = "Comirnaty COVID-19 mRNA Vacc ready to use 0.3ml inj md vials",
 
   # Pfizer children
-
   "pfizer_original_children" = "COVID-19 mRNA Vaccine Comirnaty Children 5-11yrs 10mcg/0.2ml dose conc for disp for inj MDV (Pfizer)",
   "pfizer_JN1_children" = "Comirnaty JN.1 Children 5-11yrs COVID-19 Vacc 0.3ml sd vials (Pfizer Ltd)",
   "pfizer_XBB15_children" = "Comirnaty Omicron XBB.1.5 Child 5-11y COVID-19 Vacc md vials",
@@ -168,12 +195,10 @@ vax_product_lookup <- c(
   "pfizer_LP81_under5" = "Comirnaty LP.8.1 Children 6m-4y COVID-19 Vacc 0.3m md vials  (Pfizer Ltd)", # note, double space before "(Pfizer Ltd)"
 
   # Astrazeneca
-
   "az_original" = "COVID-19 Vaccine Vaxzevria 0.5ml inj multidose vials (AstraZeneca)",
   "az_original_half" = "COVID-19 Vac AZD2816 (ChAdOx1 nCOV-19) 3.5x10*9 viral part/0.5ml dose sol for inj MDV (AstraZeneca)",
 
   # Moderna
-
   "moderna_original" = "COVID-19 mRNA Vaccine Spikevax (nucleoside modified) 0.1mg/0.5mL dose disp for inj MDV (Moderna)",
   "moderna_omicron" = "COVID-19 Vac Spikevax (Zero)/(Omicron) inj md vials",
   "moderna_BA45" = "COVID-19 Vacc Spikevax Orig/Omicron BA.4/BA.5 inj md vials",
@@ -186,7 +211,6 @@ vax_product_lookup <- c(
   "sanofigsk_B1" = "COVID-19 Vacc VidPrevtyn (B.1.351) 0.5ml inj multidose vials",
   "sanofigsk_D614" = "COVID-19 Vac Sanofi (CoV2 preS dTM monovalent D614 (recombinant)) 5mcg/0.5ml dose susp for inj MDV",
   "sanofigsk_D614B1" = "COVID-19 Vacc Sanofi (D614+B.1.351) 0.5ml inj md vials",
-
 
   # Novavax
   "novavax" = "COVID-19 Vac Nuvaxovid (recombinant, adj) 5micrograms/0.5ml dose susp for inj MDV (Novavax CZ a.s.)",
@@ -226,7 +250,6 @@ vax_product_lookup <- c(
 
   # Not specified
   "unspecified" = "SARS-2 Coronavirus vaccine"
-
 )
 
 
@@ -304,20 +327,27 @@ factor_levels <-
       "Learning disability register"
     ),
     ckd_stage_3to5 = c(
-      "no ckd",
+      "no CKD",
       "3",
       "4",
       "5",
-      "ckd, without ckd3-5 code"
+      "CKD, without stage 3-5 code"
     ),
     ckd_rrt = c(
       "No CKD or RRT",
       "RRT (transplant)",
       "RRT (dialysis)",
-      "Stage 3",
-      "Stage 4",
-      "Stage 5",
-      "CKD, without stage 3-5 code"
+      "Stage 3 CKD",
+      "Stage 4 CKD",
+      "Stage 5 CKD",
+      "CKD without stage 3-5 code"
+    ),
+    rural_urban_5 = c(
+      "Urban major conurbation",
+      "Urban minor conurbation",
+      "Urban city and town",
+      "Rural town and fringe",
+      "Rural village and dispersed"
     )
 
   )
@@ -330,16 +360,17 @@ standardise_demographic_characteristics <-
 
     ## --VARIABLES--
     ## demographics
-    ageband4 = cut(
+    ageband6 = cut(
       age,
-      breaks = c(-Inf, 12, 50, 65, 75, 105, Inf),
-      labels = c("under 12", "12-49", "50-64", "65-74", "75-104", "105+"), # under 12 and 105+ should be excluded in analysis but include here to ensure nobody slipped through the net
+      breaks = c(-Inf, 5, 25, 45, 65, 85, 105, Inf),
+      labels = c("under 5", "5-24", "25-44", "45-64", "65-84", "85-104", "105+"), #105+ should be excluded in analysis but include here to ensure nobody slipped through the net
       right = FALSE
     ),
-    ageband13 = cut(
+    ageband12 = cut(
       age,
-      breaks = c(-Inf, 12, 18, 30, 40, 50, 55, 60, 65, 70, 75, 80, 85, 90, 105, Inf),
-      labels = c("under 12", "12-17", "18-29", "30-39", "40-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "90-104", "105+"), # under 12 and 105+ should be excluded in analysis but include here to ensure nobody slipped through the net
+      breaks = c(-Inf, 1, 2, 5, 15, 25, 35, 45, 55, 65, 75, 85, 105, Inf),
+      labels = c("under 1", "1","2-4", "5-14", "15-24", "25-34", "35-44",
+      "45-54", "55-64", "65-74", "75-84", "85-104", "105+"), #105+ should be excluded in analysis but include here to ensure nobody slipped through the net
       right = FALSE
     ),
     region = fct_collapse(
@@ -359,6 +390,7 @@ standardise_demographic_characteristics <-
       include.lowest = TRUE,
       right = FALSE
     ),
+    rural_urban_5 = factor(rural_urban_5, levels = factor_levels$rural_urban_5)
   )
 
 ## CKD-RRT classification
@@ -370,10 +402,10 @@ standardise_primis_and_extended_characteristics <-
     ckd_rrt = case_when(
       rrt_cat == "1 dialysis" ~ "RRT (dialysis)",
       rrt_cat == "2 transplant" ~ "RRT (transplant)",
-      ckd_stage_3to5 == "5" ~ "Stage 5",
-      ckd_stage_3to5 == "4" ~ "Stage 4",
-      ckd_stage_3to5 == "3" ~ "Stage 3",
-      ckd_stage_3to5 == "ckd, without stage 3-5 code" ~ "CKD, without stage 3-5 code",
+      ckd_stage_3to5 == "5" ~ "Stage 5 CKD",
+      ckd_stage_3to5 == "4" ~ "Stage 4 CKD",
+      ckd_stage_3to5 == "3" ~ "Stage 3 CKD",
+      ckd_stage_3to5 == "CKD, without stage 3-5 code" ~ "CKD without stage 3-5 code",
       TRUE ~ "No CKD or RRT"
     ) |> factor(levels = factor_levels$ckd_rrt, ordered = FALSE),
 
@@ -384,7 +416,13 @@ standardise_primis_and_extended_characteristics <-
 
     cns_learndis = (cns | learndis),
 
-    sickle_cell_asplenia = (sickle_cell | asplenia)
+    sickle_cell_asplenia = (sickle_cell | asplenia),
+
+    immunosuppressed_crd = (immunosuppressed | crd),
+
+    primis_atrisk_count = crd + chd + ckd + cld + cns_learndis + diabetes + immunosuppressed + asplenia + severe_obesity + smi,
+
+    primis_atrisk_count_fct = cut(primis_atrisk_count, breaks = c(0,1,2,3,4,Inf), labels = c("0", "1", "2", "3", "4+"), right= FALSE)
   )
 
 
@@ -405,48 +443,25 @@ level1_group <- c(
   # Level 1A (all)
   "all",
 
-  # level 1B (age4)
-  "ageband4" #,
+  # level 1B (age6)
+  "ageband6",
 
-  # # level 1C (age13)
-  # "ageband13",
-
-  # # Level 1D (eligibility)
-  # "any_eligibility",
-  # "age_above_eligiblity_threshold",
-  # "clinical_priority",
-  # "clinical_priority_only",
-  # "carehome_status",
-
-  # # Level 1E (clinical risk)
-  # "primis_atrisk",
-  # "crd",
-  # "chd",
-  # "ckd",
-  # "cld",
-  # "cns_learndis",
-  # "diabetes",
-  # "immunosuppressed",
-  # "asplenia",
-  # "severe_obesity",
-  # "smi"
+  # level 1C (age13)
+  "ageband12"
 )
 
-level2_group <- c(
-  "all",
+age_subgroups <- c("ageband6", "ageband12")
 
-  # sociodemographic subgroups
-  "ageband4",
-  "ageband13",
+sociodemographic_subgroups <- c(
   "sex",
   "ethnicity5",
-  "ethnicity16",
   "region",
   "imd_quintile",
   "carehome_status",
+  "rural_urban_5"
+)
 
-  # Core clinical risk subgroups
-  "primis_atrisk",
+core_subgroups <- c(
   "crd",
   "chd",
   "ckd",
@@ -456,9 +471,10 @@ level2_group <- c(
   "immunosuppressed",
   "asplenia",
   "severe_obesity",
-  "smi",
+  "smi"
+)
 
-  # Extended subgroups
+extended_subgroups <- c(
   "ckd_rrt", # RRT - CKD3-5
   "copd", # Chronic obstructive pulmonary disease
   "learndis_cat", # Learning disabilities categories
@@ -467,8 +483,33 @@ level2_group <- c(
   "cochlear_implant",   # Cochlear implant
   "cystic_fibrosis",    # Cystic fibrosis
   "csfl",               # Cerebrospinal fluid leak
-  "homeless"           # Homeless
+  "rheum_arth",         # Rheumatoid arthritis
+  "immunosuppressed_crd" # Immunosuppressed or crd
 )
+
+level2_group <- c(
+  "all",
+  age_subgroups,
+  "primis_atrisk",
+  "primis_atrisk_count_fct",
+  core_subgroups,
+  extended_subgroups
+)
+
+level2_baseline <- c(
+  level2_group,
+  sociodemographic_subgroups
+)
+
+baseline_combos <-
+  expand_grid(
+    group1 = level1_group,
+    group2 = level2_baseline
+  ) |>
+  filter(
+    (group1 == group2) %in% c(FALSE, NA) | (group1 == "all"),
+    !((group1 %in% c("ageband6", "ageband12")) & (group2 %in% c("ageband6", "ageband12"))),
+  )
 
 level_combos <-
   expand_grid(
@@ -477,9 +518,7 @@ level_combos <-
   ) |>
   filter(
     (group1 == group2) %in% c(FALSE, NA) | (group1 == "all"),
-    !((group1 %in% c("ageband4", "ageband13")) & (group2 %in% c("ageband4", "ageband13"))),
-    !((group1 %in% c("age_above_eligiblity_threshold", "clinical_priority_only")) & (group2 %in% c("ageband4", "ageband13"))),
-    !((group1 %in% c("clinical_priority_only")) & (group2 %in% c("primis_atrisk"))),
+    !((group1 %in% c("ageband6", "ageband12")) & (group2 %in% c("ageband6", "ageband12"))),
   )
 
 # Local run flag ----

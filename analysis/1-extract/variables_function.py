@@ -300,7 +300,7 @@ def primis_atrisk(index_date):
 def primis_variables(dataset, index_date, var_name_suffix=""):
     dataset.add_column(f"immunosuppressed{var_name_suffix}", is_immunosuppressed(index_date)) # immunosuppress grouped
     dataset.add_column(f"ckd{var_name_suffix}", has_ckd(index_date)) # chronic kidney disease
-    dataset.add_column(f"crd{var_name_suffix}", has_prior_event(codelists.resp_cov, index_date)) # chronic respiratory disease (inclduing asthma)
+    dataset.add_column(f"crd{var_name_suffix}", has_crd(index_date)) # chronic respiratory disease (inclduing asthma)
     dataset.add_column(f"diabetes{var_name_suffix}", has_diabetes(index_date)) # diabetes
     dataset.add_column(f"cld{var_name_suffix}", has_prior_event(codelists.cld, index_date)) # chronic liver disease
     dataset.add_column(f"chd{var_name_suffix}", has_prior_event(codelists.chd_cov, index_date)) # chronic heart disease
@@ -332,7 +332,7 @@ def has_cochlear_implant(index_date, where=True):
     date_cochlear_implant = last_prior_event(codelists.cochlear_implant, index_date).date
     # Removal codes relating to cochlear implant
     date_remove_cochlear_implant = last_prior_event(codelists.remove_cochlear_implant, index_date).date
-    # Severe mental illness
+    # cochlear implant
     cochlear_implant = case(
         when(date_remove_cochlear_implant < date_cochlear_implant).then(True),
         when(date_cochlear_implant.is_not_null() & date_remove_cochlear_implant.is_null()).then(True),
@@ -417,30 +417,6 @@ def ckd_stage_3to5(index_date):
     )
     return stage
 
-# Creatinine event
-def last_creatinine_event(index_date):
-    creatinine_event = (
-        clinical_events_ranges
-        .where(clinical_events_ranges.snomedct_code.is_in(codelists.creatinine))
-        .where(
-            clinical_events_ranges.date.is_on_or_between(
-                index_date - years(2), index_date
-            )
-        )
-        .where(
-            (clinical_events_ranges.comparator == "=")
-            | (clinical_events_ranges.comparator.is_null())
-        )
-        .where(
-            clinical_events_ranges.numeric_value.is_not_null()
-            & (clinical_events_ranges.numeric_value > 20.0)
-            & (clinical_events_ranges.numeric_value < 3000.0)
-        )
-        .sort_by(clinical_events_ranges.date)
-        .last_for_patient()
-    )
-    return creatinine_event
-
 # learning disability cateogry
 def learndis_cat(index_date): 
     
@@ -460,18 +436,18 @@ def learndis_cat(index_date):
     return learndis_cat
 
 # Homelessness
-def homeless(index_date, where=True):
-    # homeless date
-    date_homeless = last_prior_event(codelists.homeless, index_date).date
-    # Residence code  date indicating no longer homeless
-    date_reside = last_prior_event(codelists.reside, index_date).date
-    # homelessness
-    homeless = case(
-        when(date_homeless.is_null()).then(False),
-        when(date_homeless.is_not_null() & ((date_reside.is_not_null() & (date_reside <= date_homeless)) | date_reside.is_null())).then(True),
-        otherwise = False
-    )
-    return homeless
+#def homeless(index_date, where=True):
+#    # homeless date
+#    date_homeless = last_prior_event(codelists.homeless, index_date).date
+#    # Residence code  date indicating no longer homeless
+#    date_reside = last_prior_event(codelists.reside, index_date).date
+#    # homelessness
+#    homeless = case(
+#        when(date_homeless.is_null()).then(False),
+#        when(date_homeless.is_not_null() & ((date_reside.is_not_null() & (date_reside <= date_homeless)) | date_reside.is_null())).then(True),
+#        otherwise = False
+#    )
+#    return homeless
 
 
 def extended_subgroups(dataset, index_date, var_name_suffix=""):
@@ -485,7 +461,8 @@ def extended_subgroups(dataset, index_date, var_name_suffix=""):
     dataset.add_column(f"cochlear_implant{var_name_suffix}", has_cochlear_implant(index_date)) # cochlear implant
     dataset.add_column(f"cystic_fibrosis{var_name_suffix}", has_prior_event(codelists.cystic_fibrosis, index_date)) # cystic fibrosis
     dataset.add_column(f"csfl{var_name_suffix}", has_prior_event(codelists.csfl, index_date)) # Cerebrospinal fluid leak
-    dataset.add_column(f"homeless{var_name_suffix}", homeless(index_date)) # Homeless
+    dataset.add_column(f"rheum_arth{var_name_suffix}", has_prior_event(codelists.rheum_arth, index_date)) # Rheumatoid arthritis
+    #dataset.add_column(f"homeless{var_name_suffix}", homeless(index_date)) # Homeless
      
 
 ############################################################
@@ -493,12 +470,27 @@ def extended_subgroups(dataset, index_date, var_name_suffix=""):
 ############################################################
 # Ethnicity
 def ethnicity5(index_date):
-    ethnicity5 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity5)
-    return ethnicity5
+     ethnicity5 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity5)
+     return ethnicity5
 
 def ethnicity16(index_date):
-    ethnicity16 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity16)
-    return ethnicity16
+     ethnicity16 = last_prior_event(codelists.ethnicity16, index_date).snomedct_code.to_category(codelists.ethnicity16)
+     return ethnicity16
+
+def rural_urban_5(index_date):
+    urban_rural_all = addresses.for_patient_on(index_date).rural_urban_classification
+    rural_urban_5 = case(
+        when(urban_rural_all == 1).then("Urban major conurbation"),
+        when(urban_rural_all == 2).then("Urban minor conurbation"),
+        when(urban_rural_all == 3).then("Urban city and town"),
+        when(urban_rural_all == 4).then("Urban city and town"),
+        when(urban_rural_all == 5).then("Rural town and fringe"),
+        when(urban_rural_all == 6).then("Rural town and fringe"),
+        when(urban_rural_all == 7).then("Rural village and dispersed"),
+        when(urban_rural_all == 8).then("Rural village and dispersed"),
+        when(urban_rural_all.is_null()).then("")
+    )
+    return rural_urban_5
 
 def demographic_variables(dataset, index_date, var_name_suffix=""):
     registration = practice_registrations.for_patient_on(index_date)
@@ -507,10 +499,10 @@ def demographic_variables(dataset, index_date, var_name_suffix=""):
     dataset.add_column(f"ethnicity5{var_name_suffix}", ethnicity5(index_date))
     dataset.add_column(f"ethnicity16{var_name_suffix}", ethnicity16(index_date))
     dataset.add_column(f"region{var_name_suffix}", registration.practice_nuts1_region_name)
-    dataset.add_column(f"stp{var_name_suffix}", registration.practice_stp)
+    #dataset.add_column(f"stp{var_name_suffix}", registration.practice_stp)
     dataset.add_column(f"imd{var_name_suffix}", addresses.for_patient_on(index_date).imd_rounded)
+    dataset.add_column(f"rural_urban_5{var_name_suffix}", rural_urban_5(index_date))
     dataset.add_column(f"carehome_status{var_name_suffix}", carehome_status(index_date))
-
 
 # Target disease specific functions -------------------------------
 
@@ -587,7 +579,21 @@ def add_target_vaccines(dataset, target_disease_values, cohort_start_date, cohor
     
 # Target disease
 ## Mild outcome
-# TODO: add 
+def primary_care_date(disease_snomed_codelist, cohort_start_date, cohort_end_date, where=True):
+
+    primary_care_date = (
+        clinical_events
+        .where(where)
+        .where(clinical_events.snomedct_code.is_in(disease_snomed_codelist))
+        .where(clinical_events.date.is_on_or_between(cohort_start_date, cohort_end_date))
+        .sort_by(clinical_events.date)
+        .first_for_patient()
+        .date
+    )
+
+    return primary_care_date
+
+
 # Severe outcomes
 def target_admissions(disease_icd10_codelist, cohort_start_date, cohort_end_date):
     
@@ -641,9 +647,12 @@ def disease_death_date(disease_icd10_codelist, cohort_start_date, cohort_end_dat
 
     return disease_death_date
 
+def add_primary_care_outcomes(dataset, disease_snomed_codelist, cohort_start_date, cohort_end_date, var_name_suffix=""):
 
-def add_target_sev_outcomes(dataset, disease_icd10_codelist, cohort_start_date, cohort_end_date, var_name_suffix=""):
-    
+    dataset.add_column(f"primary_care_date{var_name_suffix}", primary_care_date(disease_snomed_codelist, cohort_start_date, cohort_end_date))    
+
+def add_sev_outcomes(dataset, disease_icd10_codelist, cohort_start_date, cohort_end_date, var_name_suffix=""):
+  
     dataset.add_column(f"admitted_date{var_name_suffix}", admitted_date(disease_icd10_codelist, cohort_start_date, cohort_end_date))
     dataset.add_column(f"admitted_primary_date{var_name_suffix}", admitted_primary_date(disease_icd10_codelist, cohort_start_date, cohort_end_date))
     dataset.add_column(f"disease_death_date{var_name_suffix}", disease_death_date(disease_icd10_codelist, cohort_start_date, cohort_end_date))

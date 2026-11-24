@@ -89,8 +89,6 @@ ckd4_snomed = ["129151000119102","140111000119107","285001000119105","2858810001
 
 ckd5_snomed = ["129161000119100","140101000119109","153851000119106","285011000119108","324501000000107","324541000000105","368461000119103","433146000","711000119100","714152005","714153000","90761000119106","950251000000106","950291000000103","950311000000102","96711000119105"]
 
-
-
 # Chronic Liver disease codes
 cld = codelist_from_csv(
   "codelists/primis-covid19-vacc-uptake-cld.csv",
@@ -176,12 +174,6 @@ dxt_chemo = codelist_from_csv(
   column="code",
 )
 
-# Chronic Neurological Disease including Significant Learning Disorder
-cns_cov = codelist_from_csv(
-  "codelists/primis-covid19-vacc-uptake-cns_cov.csv",
-  column="code",
-)
-
 # Asplenia or Dysfunction of the Spleen codes
 spln_cov = codelist_from_csv(
   "codelists/primis-covid19-vacc-uptake-spln_cov.csv",
@@ -212,74 +204,50 @@ learndis = codelist_from_csv(
   column="code",
 )
 
-
-# Cancer
-
-cancer_haem_snomed=codelist_from_csv(
-    "codelists/opensafely-haematological-cancer-snomed.csv",
-    column="id",
-)
-
-cancer_nonhaem_nonlung_snomed=codelist_from_csv(
-    "codelists/opensafely-cancer-excluding-lung-and-haematological-snomed.csv",
-    column="id",
-)
-
-cancer_lung_snomed=codelist_from_csv(
-    "codelists/opensafely-lung-cancer-snomed.csv",
-    column="id",
-)
-
-chemotherapy_radiotherapy_snomed = codelist_from_csv(
-  "codelists/opensafely-chemotherapy-or-radiotherapy-snomed.csv", 
-  column = "id"
-)
-
-cancer_nonhaem_snomed = (
-  cancer_nonhaem_nonlung_snomed + 
-  cancer_lung_snomed + 
-  chemotherapy_radiotherapy_snomed
-)
-
-# solid organ transplant
-solid_organ_transplant=codelist_from_csv(
-    "codelists/opensafely-solid-organ-transplantation-snomed.csv",
-    column="id",
-)
-
-# HIV/AIDS
-hiv_aids=codelist_from_csv(
-    "codelists/nhsd-hiv-aids-snomed.csv",
-    column="code",
-)
-
-
 # Patients in long-stay nursing and residential care
 carehome_primis = codelist_from_csv(
     "codelists/primis-covid19-vacc-uptake-longres.csv", 
     column="code",
 )
 carehome_nhs_refset = codelist_from_csv(
-    "codelists/primis-covid19-vacc-uptake-longres.csv", 
+    "codelists/nhsd-primary-care-domain-refsets-carehome_cod.csv",
     column="code",
 )
 
 # Outcomes -----------------------------
 #TODO mild outcomes
 # COVID-19 
+covid_snomed_codelist = codelist_from_csv(
+  "codelists/opensafely-covid-19-identification-primary-care.csv",
+  column = "code",
+)
+
 covid_icd10 = ["U071", "U072", "U109", "U075"]
 
 # Flu
+flu_narrow_snomed_codelist = codelist_from_csv(
+  "codelists/opensafely-influenza-identification-primary-care.csv",
+  column = "code",
+)
+
 flu_icd10 = codelist_from_csv(
     "codelists/opensafely-influenza-identification-secondary-care.csv", 
     column="code",
 )
 
 # RSV
+rsv_narrow_snomed_codelist = codelist_from_csv(
+  "codelists/opensafely-rsv-identification-primary-care.csv",
+  column = "code",
+)
+
 rsv_icd10 = codelist_from_csv(
     "codelists/opensafely-rsv-identification-secondary-care.csv", 
     column="code",
 )
+
+rsv_icd10_narrow = ["B974", "J121", "J205", "J210"]
+
 
 #TODO: zoster
 
@@ -293,11 +261,6 @@ dialysis = codelist_from_csv(
 
 kidney_transplant = codelist_from_csv(
     "codelists/nhsd-primary-care-domain-refsets-renaltransp_cod.csv",
-    column="code",
-)
-
-creatinine = codelist_from_csv(
-    "codelists/nhsd-primary-care-domain-refsets-cre_cod.csv",
     column="code",
 )
 
@@ -325,7 +288,6 @@ cirrhosis = codelist_from_csv(
     column="code",
 )
 
-
 cochlear_implant = codelist_from_csv(
     "codelists/nhsd-primary-care-domain-refsets-cocimpatrisk1_cod.csv", 
     column="code",
@@ -346,13 +308,7 @@ csfl = codelist_from_csv(
     column="code",
 )
 
-homeless = codelist_from_csv(
-    "codelists/primis-covid19-vacc-uptake-homeless_cod.csv", 
+rheum_arth = codelist_from_csv(
+    "codelists/nhsd-primary-care-domain-refsets-rarth_cod.csv",
     column="code",
 )
-
-reside = codelist_from_csv(
-    "codelists/primis-covid19-vacc-uptake-reside_cod.csv", 
-    column="code",
-)
-
