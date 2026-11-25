@@ -77,7 +77,7 @@ baseline_summary <- function(data, ...) {
       cohort_id
     ) |>
     mutate(
-      n_group2 = roundmid_any(n_group2, sdc_threshold)
+      n_group2 = round_sdc(n_group2)
     ) |>
     ungroup()
 }
@@ -149,8 +149,8 @@ baseline_vax_summary <- function(data, ...) {
     ) |>
     mutate(
       n_total_round10 = sum(n_round10),
-      n_total_round10 = roundmid_any(n_total_round10, sdc_threshold),
-      n_round10 = roundmid_any(n_round10, sdc_threshold),
+      n_total_round10 = round_sdc(n_total_round10),
+      n_round10 = round_sdc(n_round10),
       pct = round(100 * n_round10 / n_total_round10, 1)
     ) |>
     ungroup()
@@ -288,10 +288,10 @@ km_estimates <- function(data, group_name1, group_name2, event_name, event_time,
     mutate(
 
       # disclosure control
-      n.risk = ceiling_any(n.risk, sdc_threshold),
-      estimate = plyr::round_any(estimate, sdc_threshold / nth(n.risk, 2)), # use 2nd value as this skips the t=0 row where n.risk=0
-      conf.low = plyr::round_any(conf.low, sdc_threshold / nth(n.risk, 2)),
-      conf.high = plyr::round_any(conf.high, sdc_threshold / nth(n.risk, 2)),
+      n.risk = ceiling_any(n.risk, sdc_precision),
+      estimate = plyr::round_any(estimate, sdc_precision / nth(n.risk, 2)), # use 2nd value as this skips the t=0 row where n.risk=0
+      conf.low = plyr::round_any(conf.low, sdc_precision / nth(n.risk, 2)),
+      conf.high = plyr::round_any(conf.high, sdc_precision / nth(n.risk, 2)),
 
       # cumulative incidence
       cmlinc = 1 - estimate,
@@ -597,9 +597,9 @@ adjusted_estimates <- function(data, subgroup, event_time, event_indicator, mode
     arrange(label) |>
     summarise(
       variable = subgroup,
-      n_obs = roundmid_any(sum(count), sdc_threshold),
-      n_event = roundmid_any(sum(event_indicator * count), sdc_threshold),
-      exposure = roundmid_any(sum(event_time * count), sdc_threshold),
+      n_obs = round_sdc(sum(count)),
+      n_event = round_sdc(sum(event_indicator * count)),
+      exposure = round_sdc(sum(event_time * count)),
       .by = label
     ) |>
     mutate(
@@ -770,6 +770,13 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator, mod
 
   # check the reshape didn't split any row (i.e. descriptive columns really were identical)
   stopifnot(nrow(estimates_wide) * length(models) == nrow(estimates_list))
+  
+  # redact statistics derived from groups of 5 or fewer, which round_sdc() maps to zero.
+  # grouped by contrast, because an IRR discloses about every level it compares
+  estimates_wide <-
+    estimates_wide |>
+    mutate(redacted = any(n_obs == 0 | n_event == 0), .by = c(group1, label1, group2)) |>
+    mutate(across(starts_with("ir"), \(x) if_else(redacted, NA, x)))
   
   write_csv(estimates_wide, fs::path(output_dir, glue("contrasts_{event_name}.csv")))
 

@@ -287,8 +287,8 @@ vax_prod_table <- bind_rows(
   ) |>
   count(indicador, month_year, product, name = "n_round10") |>
   mutate(
-    n_round10 = round_any(n_round10, sdc_threshold
-  )) |>
+    n_round10 = round_sdc(n_round10)
+  ) |>
   arrange(indicador, month_year, product) %>%
   mutate(
     month_year = format(month_year, "%b %Y")

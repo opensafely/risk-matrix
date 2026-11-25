@@ -44,8 +44,9 @@ floor_any <- function(x, to = 1L) {
 round_any <- function(x, to = 1) {
   if (to == 0) {
     x
+  } else {
+    plyr::round_any(x, accuracy = sdc_precision)
   }
-  plyr::round_any(x, accuracy = sdc_precision)
 }
 
 # incidence rate per 1,000 person-years, with a 95% CI from the standard error of the log rate
@@ -125,7 +126,7 @@ sdc_precision <- 10L # the rounding precision for counts
 
 # select SDC method for entire project, with rounding precision baked in
 round_sdc <- function(x, to = sdc_precision) {
-  if_else(x > sdc_threshold, round_any(x, to = to), 0)
+  if_else(x > sdc_threshold, floor(x / to + 0.5) * to, 0)
 }
 
 # cohort dates
