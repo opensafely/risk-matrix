@@ -10,45 +10,42 @@ library("tidyverse")
 
 # utility functions ----
 
-roundmid_any <- function(x, to = 1) {
+roundmid_any <- function(x, to = 1L) {
   # like ceiling_any, but centers on (integer) midpoint of the rounding points
   if (to == 0) {
     x
   } else {
-    ceiling(x / to) * to - (floor(to / 2) * (x != 0))
+    as.integer(ceiling(x / to) * to - (floor(to / 2) * (x != 0)))
   }
 }
 
-ceiling_any <- function(x, to = 1) {
+ceiling_any <- function(x, to = 1L) {
   # round to nearest 100 millionth to avoid floating point errors
-
+  
   if (to == 0) {
-    return(x)
+    x
   } else {
-    return(ceiling(plyr::round_any(x / to, 1 / 100000000)) * to)
-    # return(plyr::round_any(x, to, f=ceiling))
+    ceiling(plyr::round_any(x / to, 1 / 100000000)) * to
   }
+  # return(plyr::round_any(x, to, f=ceiling))
 }
 
-
-floor_any <- function(x, to = 1) {
+floor_any <- function(x, to = 1L) {
   # round to nearest 100 millionth to avoid floating point errors
-
+  
   if (to == 0) {
-    return(x)
+    x
   } else {
-    return(floor(plyr::round_any(x / to, 1 / 100000000)) * to)
-    # return(plyr::round_any(x, to, f=floor))
+    floor(plyr::round_any(x / to, 1 / 100000000)) * to
   }
+  # return(plyr::round_any(x, to, f=floor))
 }
-
 
 round_any <- function(x, to = 1) {
   if (to == 0) {
     x
-  } else {
-    if_else(x != 5, plyr::round_any(x, accuracy = to), 0)
   }
+  plyr::round_any(x, accuracy = sdc_precision)
 }
 
 # incidence rate per 1,000 person-years, with a 95% CI from the standard error of the log rate
@@ -123,7 +120,13 @@ fct_case_when <- function(...) {
 # list2env(study_dates, globalenv())
 
 # statistical disclosure control rounding precision
-sdc_threshold <- 10
+sdc_threshold <- 5L # descriptions of groups of size equal or less than this value will be redacted
+sdc_precision <- 10L # the rounding precision for counts
+
+# select SDC method for entire project, with rounding precision baked in
+round_sdc <- function(x, to = sdc_precision) {
+  if_else(x > sdc_threshold, round_any(x, to = to), 0)
+}
 
 # cohort dates
 cohort_info <-
