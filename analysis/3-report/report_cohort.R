@@ -775,8 +775,10 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator, mod
   # grouped by contrast, because an IRR discloses about every level it compares
   estimates_wide <-
     estimates_wide |>
+    mutate(redacted_obs = any(n_obs == 0), .by = c(group1, label1, group2)) |>
+    mutate(across(exposure, \(x) if_else(redacted_obs, NA, x))) |>
     mutate(redacted = any(n_obs == 0 | n_event == 0), .by = c(group1, label1, group2)) |>
-    mutate(across(starts_with("ir"), \(x) if_else(redacted, NA, x)))
+    mutate(across(starts_with("irr"), \(x) if_else(redacted, NA, x)))
   
   write_csv(estimates_wide, fs::path(output_dir, glue("contrasts_{event_name}.csv")))
 
