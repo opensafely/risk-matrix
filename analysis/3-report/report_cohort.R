@@ -775,8 +775,8 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator, mod
   # grouped by contrast, because an IRR discloses about every level it compares
   estimates_wide <-
     estimates_wide |>
-    mutate(redacted_obs = any(n_obs == 0), .by = c(group1, label1, group2)) |>
-    mutate(across(exposure, \(x) if_else(redacted_obs, NA, x))) |>
+    mutate(redacted_obs = n_obs == 0) |>
+    mutate(across(c(exposure, starts_with("ir_1000py")), \(x) if_else(redacted_obs, NA, x))) |>
     mutate(redacted = any(n_obs == 0 | n_event == 0), .by = c(group1, label1, group2)) |>
     mutate(across(starts_with("irr"), \(x) if_else(redacted, NA, x)))
   
