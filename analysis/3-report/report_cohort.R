@@ -23,11 +23,27 @@ source(here("analysis", "0-lib", "design.R"))
 
 args <- commandArgs(trailingOnly = TRUE)
 
+#  Options for section parameter:
+#     baseline   baseline characteristics, vaccination history, KM uptake, vaccination IRRs
+#     burden     incidence and IRRs for all individuals
+#     subgroups  incidence and IRRs within the nested subsets
+#     all        everything (the default when no section is given, for local runs)
+
 if (length(args) == 0) {
   cohort_id <- "rsv_2023_24"
+  section <- "all" 
 } else {
   cohort_id <- args[[1]]
+  section <- if (length(args) >= 2) args[[2]] else "all"
 }
+
+stopifnot(
+  "section must be one of: all, baseline, burden, subgroups" =
+    section %in% c("all", "baseline", "burden", "subgroups")
+)
+
+# TRUE when the named section should run; "all" runs everything, for local use
+run_section <- function(x) section %in% c("all", x)
 
 cohort_info <- cohort_info |>
   filter(cohort_id == .env$cohort_id)
@@ -40,7 +56,7 @@ temporal_resolution_km <- 7L
 cohort_info$cohort_end_days <- ceiling_any(cohort_info$cohort_end_days, temporal_resolution_km)
 
 # Create output directory ----
-output_dir <- here("output", "3-report", glue("report_{cohort_id}"))
+output_dir <- here("output", "3-report", glue("report_{cohort_id}_{section}"))
 fs::dir_create(output_dir)
 options(width = 200)
 
@@ -54,6 +70,8 @@ capture.output(
   file = fs::path(output_dir, "data_prepared_skim.txt"),
   split = FALSE
 )
+
+if (run_section("baseline")) {
 
 #################################################################################################################
 # 1. Baseline characteristics
@@ -191,6 +209,9 @@ write_csv(
   baseline_vax_table,
   fs::path(output_dir, "baseline_vax_history.csv")
 )
+
+}
+
 
 #################################################################################################################
 # 2. Follow-up descriptive analyses
@@ -396,6 +417,8 @@ get_all_km_estimates <- function(data, event_name, event_time, event_indicator, 
 cat("## Report KM cumulative incidence of vaccination in a standardised table", "\n")
 ## _______________________________________________________________________________________
 
+if (run_section("baseline")) {
+
 km_estimates_vax_table <- get_all_km_estimates(data = data_prepared, event_name =  "vax", event_time = "vax_time", event_indicator = "vax_indicator")
 #km_estimates_vax_alive_table <- get_all_km_estimates(filter(data_prepared, alive_and_registered), "vax_alive", event_time = "vax_time", event_indicator = "vax_indicator")
 
@@ -466,6 +489,8 @@ walk2(
     )
   }
 )
+
+}
 
 #################################################################################################################
 # 2.B Disease burden
@@ -788,41 +813,48 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator, mod
 cat("## Get all IRR contrasts for vaccination and burden", "\n")
 ## _______________________________________________________________________________________
 
-# IRR for vaccination, in the usual way
-get_all_estimates(data_prepared, "vax", "vax_time", "vax_indicator")
+# Vaccination (baseline section) ----
+if (run_section("baseline")) {
+  get_all_estimates(data_prepared, "vax", "vax_time", "vax_indicator")
+}
 
-# IRR for vaccination, only looking at those who survived or stayed registered to the end of the season (collider bias! but matches UKHSA reports)
-# get_all_estimates(filter(data_prepared, alive_and_registered), "vax_alive", "vax_time", "vax_indicator")
+# Burden, all individuals ----
+if (run_section("burden")) {
+  get_all_estimates(data_prepared, "primary_care", "primary_care_time", "primary_care_indicator")
+  get_all_estimates(data_prepared, "admitted", "admitted_time", "admitted_indicator")
+  get_all_estimates(data_prepared, "admitted_primary", "admitted_primary_time", "admitted_primary_indicator")
+  get_all_estimates(data_prepared, "disease_death", "disease_death_time", "disease_death_indicator")
 
-# IRR for burden, in the usual way
-get_all_estimates(data_prepared, "primary_care", "primary_care_time", "primary_care_indicator")
-get_all_estimates(data_prepared, "admitted", "admitted_time", "admitted_indicator")
-get_all_estimates(data_prepared, "admitted_primary", "admitted_primary_time", "admitted_primary_indicator")
-get_all_estimates(data_prepared, "disease_death", "disease_death_time", "disease_death_indicator")
+  # RSV only: narrow phenotype for severe outcomes
+  if ("admitted_narrow_indicator" %in% names(data_prepared)) {
+    get_all_estimates(data_prepared, "admitted_narrow", "admitted_narrow_time", "admitted_narrow_indicator")
+    get_all_estimates(data_prepared, "admitted_primary_narrow", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
+    get_all_estimates(data_prepared, "disease_death_narrow", "disease_death_narrow_time", "disease_death_narrow_indicator")
+  }
+}
 
-# Exclusion of immunosuppressed
-get_all_estimates(data_prepared |> filter(immunosuppressed==0), "primary_care_no_IS", "primary_care_time", "primary_care_indicator")
-get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_no_IS", "admitted_time", "admitted_indicator")
-get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_primary_no_IS", "admitted_primary_time", "admitted_primary_indicator")
-get_all_estimates(data_prepared |> filter(immunosuppressed==0), "disease_death_no_IS", "disease_death_time", "disease_death_indicator")
+# Nested subsets ----
+if (run_section("subgroups")) {
 
-# Exclusion of immunosuppressed_crd
-get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "primary_care_no_IS_CRD", "primary_care_time", "primary_care_indicator")
-get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_no_IS_CRD", "admitted_time", "admitted_indicator")
-get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_primary_no_IS_CRD", "admitted_primary_time", "admitted_primary_indicator")
-get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "disease_death_no_IS_CRD", "disease_death_time", "disease_death_indicator")
+  # Exclusion of immunosuppressed
+  get_all_estimates(data_prepared |> filter(immunosuppressed==0), "primary_care_no_IS", "primary_care_time", "primary_care_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_no_IS", "admitted_time", "admitted_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_primary_no_IS", "admitted_primary_time", "admitted_primary_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed==0), "disease_death_no_IS", "disease_death_time", "disease_death_indicator")
 
-# RSV only: narrow phenotype for severe outcomes
-if ("admitted_narrow_indicator" %in% names(data_prepared)) {
-  get_all_estimates(data_prepared, "admitted_narrow", "admitted_narrow_time", "admitted_narrow_indicator")
-  get_all_estimates(data_prepared, "admitted_primary_narrow", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
-  get_all_estimates(data_prepared, "disease_death_narrow", "disease_death_narrow_time", "disease_death_narrow_indicator")
-  
-  get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_narrow_no_IS", "admitted_narrow_time", "admitted_narrow_indicator")
-  get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_primary_narrow_no_IS", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
-  get_all_estimates(data_prepared |> filter(immunosuppressed==0), "disease_death_narrow_no_IS", "disease_death_narrow_time", "disease_death_narrow_indicator")
-  
-  get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_narrow_no_IS_CRD", "admitted_narrow_time", "admitted_narrow_indicator")
-  get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_primary_narrow_no_IS_CRD", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
-  get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "disease_death_narrow_no_IS_CRD", "disease_death_narrow_time", "disease_death_narrow_indicator")
+  # Exclusion of immunosuppressed_crd
+  get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "primary_care_no_IS_CRD", "primary_care_time", "primary_care_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_no_IS_CRD", "admitted_time", "admitted_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_primary_no_IS_CRD", "admitted_primary_time", "admitted_primary_indicator")
+  get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "disease_death_no_IS_CRD", "disease_death_time", "disease_death_indicator")
+
+  # RSV only: narrow phenotype within the nested subsets
+  if ("admitted_narrow_indicator" %in% names(data_prepared)) {
+    get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_narrow_no_IS", "admitted_narrow_time", "admitted_narrow_indicator")
+    get_all_estimates(data_prepared |> filter(immunosuppressed==0), "admitted_primary_narrow_no_IS", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
+    get_all_estimates(data_prepared |> filter(immunosuppressed==0), "disease_death_narrow_no_IS", "disease_death_narrow_time", "disease_death_narrow_indicator")
+    get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_narrow_no_IS_CRD", "admitted_narrow_time", "admitted_narrow_indicator")
+    get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "admitted_primary_narrow_no_IS_CRD", "admitted_primary_narrow_time", "admitted_primary_narrow_indicator")
+    get_all_estimates(data_prepared |> filter(immunosuppressed_crd==0), "disease_death_narrow_no_IS_CRD", "disease_death_narrow_time", "disease_death_narrow_indicator")
+  }
 }
