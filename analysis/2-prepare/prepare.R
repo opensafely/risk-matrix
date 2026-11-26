@@ -258,18 +258,18 @@ write_feather(
   fs::path(output_dir, glue("prepare_{cohort_id}.arrow"))
 )
 
-#TODO: check this for RSV / FLU
+# Prepare vaccine product table by month
 vax_prod_table <- bind_rows(
   data_prepared |>
     transmute(
-      indicador = "last_vax_before_start",
+      indicator = "last_vax_before_start",
       date = last_vax_date_before_start_date,
       product = last_vax_product_before_start
     ),
 
   data_prepared |>
     transmute(
-      indicador = "first_vax_after_start",
+      indicator = "first_vax_after_start",
       date = first_vax_date_after_start_date,
       product = first_vax_product_after_start
     )
@@ -285,11 +285,11 @@ vax_prod_table <- bind_rows(
     #   TRUE ~ NA_character_
     # )
   ) |>
-  count(indicador, month_year, product, name = "n_round10") |>
+  count(indicator, month_year, product, name = "n_round10") |>
   mutate(
     n_round10 = round_sdc(n_round10)
   ) |>
-  arrange(indicador, month_year, product) %>%
+  arrange(indicator, month_year, product) %>%
   mutate(
     month_year = format(month_year, "%b %Y")
   )
