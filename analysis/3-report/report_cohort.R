@@ -24,10 +24,10 @@ source(here("analysis", "0-lib", "design.R"))
 args <- commandArgs(trailingOnly = TRUE)
 
 #  Options for section parameter:
-#     baseline   baseline characteristics, vaccination history, KM uptake, vaccination IRRs
-#     burden     incidence and IRRs for all individuals
-#     subgroups  incidence and IRRs within the nested subsets
-#     all        everything (the default when no section is given, for local runs)
+#     baseline_vax     baseline characteristics, vaccination history, KM uptake, vaccination IRRs
+#     burden           incidence and IRRs for all individuals
+#     burden_subsets   incidence and IRRs within the nested subsets
+#     all              everything (the default when no section is given, for local runs)
 
 if (length(args) == 0) {
   cohort_id <- "rsv_2023_24"
@@ -38,8 +38,8 @@ if (length(args) == 0) {
 }
 
 stopifnot(
-  "section must be one of: all, baseline, burden, subgroups" =
-    section %in% c("all", "baseline", "burden", "subgroups")
+  "section must be one of: all, baseline_vax, burden, burden_subsets" =
+    section %in% c("all", "baseline_vax", "burden", "burden_subsets")
 )
 
 # TRUE when the named section should run; "all" runs everything, for local use
@@ -71,7 +71,7 @@ capture.output(
   split = FALSE
 )
 
-if (run_section("baseline")) {
+if (run_section("baseline_vax")) {
 
 #################################################################################################################
 # 1. Baseline characteristics
@@ -417,7 +417,7 @@ get_all_km_estimates <- function(data, event_name, event_time, event_indicator, 
 cat("## Report KM cumulative incidence of vaccination in a standardised table", "\n")
 ## _______________________________________________________________________________________
 
-if (run_section("baseline")) {
+if (run_section("baseline_vax")) {
 
 km_estimates_vax_table <- get_all_km_estimates(data = data_prepared, event_name =  "vax", event_time = "vax_time", event_indicator = "vax_indicator")
 #km_estimates_vax_alive_table <- get_all_km_estimates(filter(data_prepared, alive_and_registered), "vax_alive", event_time = "vax_time", event_indicator = "vax_indicator")
@@ -813,8 +813,8 @@ get_all_estimates <- function(data, event_name, event_time, event_indicator, mod
 cat("## Get all IRR contrasts for vaccination and burden", "\n")
 ## _______________________________________________________________________________________
 
-# Vaccination (baseline section) ----
-if (run_section("baseline")) {
+# Vaccination (baseline_vax section) ----
+if (run_section("baseline_vax")) {
   get_all_estimates(data_prepared, "vax", "vax_time", "vax_indicator")
 }
 
@@ -834,7 +834,7 @@ if (run_section("burden")) {
 }
 
 # Nested subsets ----
-if (run_section("subgroups")) {
+if (run_section("burden_subsets")) {
 
   # Exclusion of immunosuppressed
   get_all_estimates(data_prepared |> filter(immunosuppressed==0), "primary_care_no_IS", "primary_care_time", "primary_care_indicator")

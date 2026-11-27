@@ -1,9 +1,9 @@
 version: '5.0'
 
-# Section argument: baseline | burden | subgroups
-#   baseline   - baseline characteristics, vaccination history, KM uptake, vax IRRs
-#   burden     - incidence and IRRs for all individuals
-#   subgroups  - incidence and IRRs within the nested subsets
+# Section argument: baseline_vax | burden | burden_subsets
+#   baseline_vax    - baseline characteristics, vaccination history, KM uptake, vax IRRs
+#   burden          - incidence and IRRs for all individuals
+#   burden_subsets  - incidence and IRRs within the nested subsets
 # Omitting the argument runs everything, which is the default for local runs.
 
 actions:
@@ -30,14 +30,14 @@ actions:
         csv: output/2-prepare/prepare_flu_2022_23/*.csv
         txt: output/2-prepare/prepare_flu_2022_23/*.txt
 
-  report_baseline_flu_2022_23:
-    run: r:v3 analysis/3-report/report_cohort.R flu_2022_23 baseline
+  report_baseline_vax_flu_2022_23:
+    run: r:v3 analysis/3-report/report_cohort.R flu_2022_23 baseline_vax
     needs: [prepare_flu_2022_23]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_flu_2022_23_baseline/*.csv
-        png: output/3-report/report_flu_2022_23_baseline/*.png
-        txt: output/3-report/report_flu_2022_23_baseline/*.txt
+        csv: output/3-report/report_flu_2022_23_baseline_vax/*.csv
+        png: output/3-report/report_flu_2022_23_baseline_vax/*.png
+        txt: output/3-report/report_flu_2022_23_baseline_vax/*.txt
 
   report_burden_flu_2022_23:
     run: r:v3 analysis/3-report/report_cohort.R flu_2022_23 burden
@@ -47,13 +47,13 @@ actions:
         csv: output/3-report/report_flu_2022_23_burden/*.csv
         txt: output/3-report/report_flu_2022_23_burden/*.txt
 
-  report_subgroups_flu_2022_23:
-    run: r:v3 analysis/3-report/report_cohort.R flu_2022_23 subgroups
+  report_burden_subsets_flu_2022_23:
+    run: r:v3 analysis/3-report/report_cohort.R flu_2022_23 burden_subsets
     needs: [prepare_flu_2022_23]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_flu_2022_23_subgroups/*.csv
-        txt: output/3-report/report_flu_2022_23_subgroups/*.txt
+        csv: output/3-report/report_flu_2022_23_burden_subsets/*.csv
+        txt: output/3-report/report_flu_2022_23_burden_subsets/*.txt
 
   extract_flu_2023_24:
     run: ehrql:v1 generate-dataset analysis/1-extract/dataset_definition.py
@@ -75,14 +75,14 @@ actions:
         csv: output/2-prepare/prepare_flu_2023_24/*.csv
         txt: output/2-prepare/prepare_flu_2023_24/*.txt
 
-  report_baseline_flu_2023_24:
-    run: r:v3 analysis/3-report/report_cohort.R flu_2023_24 baseline
+  report_baseline_vax_flu_2023_24:
+    run: r:v3 analysis/3-report/report_cohort.R flu_2023_24 baseline_vax
     needs: [prepare_flu_2023_24]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_flu_2023_24_baseline/*.csv
-        png: output/3-report/report_flu_2023_24_baseline/*.png
-        txt: output/3-report/report_flu_2023_24_baseline/*.txt
+        csv: output/3-report/report_flu_2023_24_baseline_vax/*.csv
+        png: output/3-report/report_flu_2023_24_baseline_vax/*.png
+        txt: output/3-report/report_flu_2023_24_baseline_vax/*.txt
 
   report_burden_flu_2023_24:
     run: r:v3 analysis/3-report/report_cohort.R flu_2023_24 burden
@@ -92,13 +92,13 @@ actions:
         csv: output/3-report/report_flu_2023_24_burden/*.csv
         txt: output/3-report/report_flu_2023_24_burden/*.txt
 
-  report_subgroups_flu_2023_24:
-    run: r:v3 analysis/3-report/report_cohort.R flu_2023_24 subgroups
+  report_burden_subsets_flu_2023_24:
+    run: r:v3 analysis/3-report/report_cohort.R flu_2023_24 burden_subsets
     needs: [prepare_flu_2023_24]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_flu_2023_24_subgroups/*.csv
-        txt: output/3-report/report_flu_2023_24_subgroups/*.txt
+        csv: output/3-report/report_flu_2023_24_burden_subsets/*.csv
+        txt: output/3-report/report_flu_2023_24_burden_subsets/*.txt
 
   extract_flu_2024_25:
     run: ehrql:v1 generate-dataset analysis/1-extract/dataset_definition.py
@@ -120,14 +120,14 @@ actions:
         csv: output/2-prepare/prepare_flu_2024_25/*.csv
         txt: output/2-prepare/prepare_flu_2024_25/*.txt
 
-  report_baseline_flu_2024_25:
-    run: r:v3 analysis/3-report/report_cohort.R flu_2024_25 baseline
+  report_baseline_vax_flu_2024_25:
+    run: r:v3 analysis/3-report/report_cohort.R flu_2024_25 baseline_vax
     needs: [prepare_flu_2024_25]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_flu_2024_25_baseline/*.csv
-        png: output/3-report/report_flu_2024_25_baseline/*.png
-        txt: output/3-report/report_flu_2024_25_baseline/*.txt
+        csv: output/3-report/report_flu_2024_25_baseline_vax/*.csv
+        png: output/3-report/report_flu_2024_25_baseline_vax/*.png
+        txt: output/3-report/report_flu_2024_25_baseline_vax/*.txt
 
   report_burden_flu_2024_25:
     run: r:v3 analysis/3-report/report_cohort.R flu_2024_25 burden
@@ -137,13 +137,13 @@ actions:
         csv: output/3-report/report_flu_2024_25_burden/*.csv
         txt: output/3-report/report_flu_2024_25_burden/*.txt
 
-  report_subgroups_flu_2024_25:
-    run: r:v3 analysis/3-report/report_cohort.R flu_2024_25 subgroups
+  report_burden_subsets_flu_2024_25:
+    run: r:v3 analysis/3-report/report_cohort.R flu_2024_25 burden_subsets
     needs: [prepare_flu_2024_25]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_flu_2024_25_subgroups/*.csv
-        txt: output/3-report/report_flu_2024_25_subgroups/*.txt
+        csv: output/3-report/report_flu_2024_25_burden_subsets/*.csv
+        txt: output/3-report/report_flu_2024_25_burden_subsets/*.txt
 
   extract_flu_2025_26:
     run: ehrql:v1 generate-dataset analysis/1-extract/dataset_definition.py
@@ -165,14 +165,14 @@ actions:
         csv: output/2-prepare/prepare_flu_2025_26/*.csv
         txt: output/2-prepare/prepare_flu_2025_26/*.txt
 
-  report_baseline_flu_2025_26:
-    run: r:v3 analysis/3-report/report_cohort.R flu_2025_26 baseline
+  report_baseline_vax_flu_2025_26:
+    run: r:v3 analysis/3-report/report_cohort.R flu_2025_26 baseline_vax
     needs: [prepare_flu_2025_26]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_flu_2025_26_baseline/*.csv
-        png: output/3-report/report_flu_2025_26_baseline/*.png
-        txt: output/3-report/report_flu_2025_26_baseline/*.txt
+        csv: output/3-report/report_flu_2025_26_baseline_vax/*.csv
+        png: output/3-report/report_flu_2025_26_baseline_vax/*.png
+        txt: output/3-report/report_flu_2025_26_baseline_vax/*.txt
 
   report_burden_flu_2025_26:
     run: r:v3 analysis/3-report/report_cohort.R flu_2025_26 burden
@@ -182,13 +182,13 @@ actions:
         csv: output/3-report/report_flu_2025_26_burden/*.csv
         txt: output/3-report/report_flu_2025_26_burden/*.txt
 
-  report_subgroups_flu_2025_26:
-    run: r:v3 analysis/3-report/report_cohort.R flu_2025_26 subgroups
+  report_burden_subsets_flu_2025_26:
+    run: r:v3 analysis/3-report/report_cohort.R flu_2025_26 burden_subsets
     needs: [prepare_flu_2025_26]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_flu_2025_26_subgroups/*.csv
-        txt: output/3-report/report_flu_2025_26_subgroups/*.txt
+        csv: output/3-report/report_flu_2025_26_burden_subsets/*.csv
+        txt: output/3-report/report_flu_2025_26_burden_subsets/*.txt
 
 # ---------- COVID-19 ----------
 
@@ -212,14 +212,14 @@ actions:
         csv: output/2-prepare/prepare_covid_wave_1/*.csv
         txt: output/2-prepare/prepare_covid_wave_1/*.txt
 
-  report_baseline_covid_wave_1:
-    run: r:v3 analysis/3-report/report_cohort.R covid_wave_1 baseline
+  report_baseline_vax_covid_wave_1:
+    run: r:v3 analysis/3-report/report_cohort.R covid_wave_1 baseline_vax
     needs: [prepare_covid_wave_1]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_covid_wave_1_baseline/*.csv
-        png: output/3-report/report_covid_wave_1_baseline/*.png
-        txt: output/3-report/report_covid_wave_1_baseline/*.txt
+        csv: output/3-report/report_covid_wave_1_baseline_vax/*.csv
+        png: output/3-report/report_covid_wave_1_baseline_vax/*.png
+        txt: output/3-report/report_covid_wave_1_baseline_vax/*.txt
 
   report_burden_covid_wave_1:
     run: r:v3 analysis/3-report/report_cohort.R covid_wave_1 burden
@@ -229,13 +229,13 @@ actions:
         csv: output/3-report/report_covid_wave_1_burden/*.csv
         txt: output/3-report/report_covid_wave_1_burden/*.txt
 
-  report_subgroups_covid_wave_1:
-    run: r:v3 analysis/3-report/report_cohort.R covid_wave_1 subgroups
+  report_burden_subsets_covid_wave_1:
+    run: r:v3 analysis/3-report/report_cohort.R covid_wave_1 burden_subsets
     needs: [prepare_covid_wave_1]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_covid_wave_1_subgroups/*.csv
-        txt: output/3-report/report_covid_wave_1_subgroups/*.txt
+        csv: output/3-report/report_covid_wave_1_burden_subsets/*.csv
+        txt: output/3-report/report_covid_wave_1_burden_subsets/*.txt
 
   extract_covid_ba1_ba2:
     run: ehrql:v1 generate-dataset analysis/1-extract/dataset_definition.py
@@ -257,14 +257,14 @@ actions:
         csv: output/2-prepare/prepare_covid_ba1_ba2/*.csv
         txt: output/2-prepare/prepare_covid_ba1_ba2/*.txt
 
-  report_baseline_covid_ba1_ba2:
-    run: r:v3 analysis/3-report/report_cohort.R covid_ba1_ba2 baseline
+  report_baseline_vax_covid_ba1_ba2:
+    run: r:v3 analysis/3-report/report_cohort.R covid_ba1_ba2 baseline_vax
     needs: [prepare_covid_ba1_ba2]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_covid_ba1_ba2_baseline/*.csv
-        png: output/3-report/report_covid_ba1_ba2_baseline/*.png
-        txt: output/3-report/report_covid_ba1_ba2_baseline/*.txt
+        csv: output/3-report/report_covid_ba1_ba2_baseline_vax/*.csv
+        png: output/3-report/report_covid_ba1_ba2_baseline_vax/*.png
+        txt: output/3-report/report_covid_ba1_ba2_baseline_vax/*.txt
 
   report_burden_covid_ba1_ba2:
     run: r:v3 analysis/3-report/report_cohort.R covid_ba1_ba2 burden
@@ -274,13 +274,13 @@ actions:
         csv: output/3-report/report_covid_ba1_ba2_burden/*.csv
         txt: output/3-report/report_covid_ba1_ba2_burden/*.txt
 
-  report_subgroups_covid_ba1_ba2:
-    run: r:v3 analysis/3-report/report_cohort.R covid_ba1_ba2 subgroups
+  report_burden_subsets_covid_ba1_ba2:
+    run: r:v3 analysis/3-report/report_cohort.R covid_ba1_ba2 burden_subsets
     needs: [prepare_covid_ba1_ba2]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_covid_ba1_ba2_subgroups/*.csv
-        txt: output/3-report/report_covid_ba1_ba2_subgroups/*.txt
+        csv: output/3-report/report_covid_ba1_ba2_burden_subsets/*.csv
+        txt: output/3-report/report_covid_ba1_ba2_burden_subsets/*.txt
 
   extract_covid_jn1:
     run: ehrql:v1 generate-dataset analysis/1-extract/dataset_definition.py
@@ -302,14 +302,14 @@ actions:
         csv: output/2-prepare/prepare_covid_jn1/*.csv
         txt: output/2-prepare/prepare_covid_jn1/*.txt
 
-  report_baseline_covid_jn1:
-    run: r:v3 analysis/3-report/report_cohort.R covid_jn1 baseline
+  report_baseline_vax_covid_jn1:
+    run: r:v3 analysis/3-report/report_cohort.R covid_jn1 baseline_vax
     needs: [prepare_covid_jn1]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_covid_jn1_baseline/*.csv
-        png: output/3-report/report_covid_jn1_baseline/*.png
-        txt: output/3-report/report_covid_jn1_baseline/*.txt
+        csv: output/3-report/report_covid_jn1_baseline_vax/*.csv
+        png: output/3-report/report_covid_jn1_baseline_vax/*.png
+        txt: output/3-report/report_covid_jn1_baseline_vax/*.txt
 
   report_burden_covid_jn1:
     run: r:v3 analysis/3-report/report_cohort.R covid_jn1 burden
@@ -319,13 +319,13 @@ actions:
         csv: output/3-report/report_covid_jn1_burden/*.csv
         txt: output/3-report/report_covid_jn1_burden/*.txt
 
-  report_subgroups_covid_jn1:
-    run: r:v3 analysis/3-report/report_cohort.R covid_jn1 subgroups
+  report_burden_subsets_covid_jn1:
+    run: r:v3 analysis/3-report/report_cohort.R covid_jn1 burden_subsets
     needs: [prepare_covid_jn1]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_covid_jn1_subgroups/*.csv
-        txt: output/3-report/report_covid_jn1_subgroups/*.txt
+        csv: output/3-report/report_covid_jn1_burden_subsets/*.csv
+        txt: output/3-report/report_covid_jn1_burden_subsets/*.txt
 
   extract_covid_2025_26:
     run: ehrql:v1 generate-dataset analysis/1-extract/dataset_definition.py
@@ -347,14 +347,14 @@ actions:
         csv: output/2-prepare/prepare_covid_2025_26/*.csv
         txt: output/2-prepare/prepare_covid_2025_26/*.txt
 
-  report_baseline_covid_2025_26:
-    run: r:v3 analysis/3-report/report_cohort.R covid_2025_26 baseline
+  report_baseline_vax_covid_2025_26:
+    run: r:v3 analysis/3-report/report_cohort.R covid_2025_26 baseline_vax
     needs: [prepare_covid_2025_26]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_covid_2025_26_baseline/*.csv
-        png: output/3-report/report_covid_2025_26_baseline/*.png
-        txt: output/3-report/report_covid_2025_26_baseline/*.txt
+        csv: output/3-report/report_covid_2025_26_baseline_vax/*.csv
+        png: output/3-report/report_covid_2025_26_baseline_vax/*.png
+        txt: output/3-report/report_covid_2025_26_baseline_vax/*.txt
 
   report_burden_covid_2025_26:
     run: r:v3 analysis/3-report/report_cohort.R covid_2025_26 burden
@@ -364,13 +364,13 @@ actions:
         csv: output/3-report/report_covid_2025_26_burden/*.csv
         txt: output/3-report/report_covid_2025_26_burden/*.txt
 
-  report_subgroups_covid_2025_26:
-    run: r:v3 analysis/3-report/report_cohort.R covid_2025_26 subgroups
+  report_burden_subsets_covid_2025_26:
+    run: r:v3 analysis/3-report/report_cohort.R covid_2025_26 burden_subsets
     needs: [prepare_covid_2025_26]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_covid_2025_26_subgroups/*.csv
-        txt: output/3-report/report_covid_2025_26_subgroups/*.txt
+        csv: output/3-report/report_covid_2025_26_burden_subsets/*.csv
+        txt: output/3-report/report_covid_2025_26_burden_subsets/*.txt
 
 # ---------- RSV ----------
 
@@ -394,14 +394,14 @@ actions:
         csv: output/2-prepare/prepare_rsv_2022_23/*.csv
         txt: output/2-prepare/prepare_rsv_2022_23/*.txt
 
-  report_baseline_rsv_2022_23:
-    run: r:v3 analysis/3-report/report_cohort.R rsv_2022_23 baseline
+  report_baseline_vax_rsv_2022_23:
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2022_23 baseline_vax
     needs: [prepare_rsv_2022_23]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_rsv_2022_23_baseline/*.csv
-        png: output/3-report/report_rsv_2022_23_baseline/*.png
-        txt: output/3-report/report_rsv_2022_23_baseline/*.txt
+        csv: output/3-report/report_rsv_2022_23_baseline_vax/*.csv
+        png: output/3-report/report_rsv_2022_23_baseline_vax/*.png
+        txt: output/3-report/report_rsv_2022_23_baseline_vax/*.txt
 
   report_burden_rsv_2022_23:
     run: r:v3 analysis/3-report/report_cohort.R rsv_2022_23 burden
@@ -411,13 +411,13 @@ actions:
         csv: output/3-report/report_rsv_2022_23_burden/*.csv
         txt: output/3-report/report_rsv_2022_23_burden/*.txt
 
-  report_subgroups_rsv_2022_23:
-    run: r:v3 analysis/3-report/report_cohort.R rsv_2022_23 subgroups
+  report_burden_subsets_rsv_2022_23:
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2022_23 burden_subsets
     needs: [prepare_rsv_2022_23]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_rsv_2022_23_subgroups/*.csv
-        txt: output/3-report/report_rsv_2022_23_subgroups/*.txt
+        csv: output/3-report/report_rsv_2022_23_burden_subsets/*.csv
+        txt: output/3-report/report_rsv_2022_23_burden_subsets/*.txt
 
   extract_rsv_2023_24:
     run: ehrql:v1 generate-dataset analysis/1-extract/dataset_definition.py
@@ -439,14 +439,14 @@ actions:
         csv: output/2-prepare/prepare_rsv_2023_24/*.csv
         txt: output/2-prepare/prepare_rsv_2023_24/*.txt
 
-  report_baseline_rsv_2023_24:
-    run: r:v3 analysis/3-report/report_cohort.R rsv_2023_24 baseline
+  report_baseline_vax_rsv_2023_24:
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2023_24 baseline_vax
     needs: [prepare_rsv_2023_24]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_rsv_2023_24_baseline/*.csv
-        png: output/3-report/report_rsv_2023_24_baseline/*.png
-        txt: output/3-report/report_rsv_2023_24_baseline/*.txt
+        csv: output/3-report/report_rsv_2023_24_baseline_vax/*.csv
+        png: output/3-report/report_rsv_2023_24_baseline_vax/*.png
+        txt: output/3-report/report_rsv_2023_24_baseline_vax/*.txt
 
   report_burden_rsv_2023_24:
     run: r:v3 analysis/3-report/report_cohort.R rsv_2023_24 burden
@@ -456,13 +456,13 @@ actions:
         csv: output/3-report/report_rsv_2023_24_burden/*.csv
         txt: output/3-report/report_rsv_2023_24_burden/*.txt
 
-  report_subgroups_rsv_2023_24:
-    run: r:v3 analysis/3-report/report_cohort.R rsv_2023_24 subgroups
+  report_burden_subsets_rsv_2023_24:
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2023_24 burden_subsets
     needs: [prepare_rsv_2023_24]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_rsv_2023_24_subgroups/*.csv
-        txt: output/3-report/report_rsv_2023_24_subgroups/*.txt
+        csv: output/3-report/report_rsv_2023_24_burden_subsets/*.csv
+        txt: output/3-report/report_rsv_2023_24_burden_subsets/*.txt
 
   extract_rsv_2024_25:
     run: ehrql:v1 generate-dataset analysis/1-extract/dataset_definition.py
@@ -484,14 +484,14 @@ actions:
         csv: output/2-prepare/prepare_rsv_2024_25/*.csv
         txt: output/2-prepare/prepare_rsv_2024_25/*.txt
 
-  report_baseline_rsv_2024_25:
-    run: r:v3 analysis/3-report/report_cohort.R rsv_2024_25 baseline
+  report_baseline_vax_rsv_2024_25:
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2024_25 baseline_vax
     needs: [prepare_rsv_2024_25]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_rsv_2024_25_baseline/*.csv
-        png: output/3-report/report_rsv_2024_25_baseline/*.png
-        txt: output/3-report/report_rsv_2024_25_baseline/*.txt
+        csv: output/3-report/report_rsv_2024_25_baseline_vax/*.csv
+        png: output/3-report/report_rsv_2024_25_baseline_vax/*.png
+        txt: output/3-report/report_rsv_2024_25_baseline_vax/*.txt
 
   report_burden_rsv_2024_25:
     run: r:v3 analysis/3-report/report_cohort.R rsv_2024_25 burden
@@ -501,13 +501,13 @@ actions:
         csv: output/3-report/report_rsv_2024_25_burden/*.csv
         txt: output/3-report/report_rsv_2024_25_burden/*.txt
 
-  report_subgroups_rsv_2024_25:
-    run: r:v3 analysis/3-report/report_cohort.R rsv_2024_25 subgroups
+  report_burden_subsets_rsv_2024_25:
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2024_25 burden_subsets
     needs: [prepare_rsv_2024_25]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_rsv_2024_25_subgroups/*.csv
-        txt: output/3-report/report_rsv_2024_25_subgroups/*.txt
+        csv: output/3-report/report_rsv_2024_25_burden_subsets/*.csv
+        txt: output/3-report/report_rsv_2024_25_burden_subsets/*.txt
 
   extract_rsv_2025_26:
     run: ehrql:v1 generate-dataset analysis/1-extract/dataset_definition.py
@@ -529,14 +529,14 @@ actions:
         csv: output/2-prepare/prepare_rsv_2025_26/*.csv
         txt: output/2-prepare/prepare_rsv_2025_26/*.txt
 
-  report_baseline_rsv_2025_26:
-    run: r:v3 analysis/3-report/report_cohort.R rsv_2025_26 baseline
+  report_baseline_vax_rsv_2025_26:
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2025_26 baseline_vax
     needs: [prepare_rsv_2025_26]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_rsv_2025_26_baseline/*.csv
-        png: output/3-report/report_rsv_2025_26_baseline/*.png
-        txt: output/3-report/report_rsv_2025_26_baseline/*.txt
+        csv: output/3-report/report_rsv_2025_26_baseline_vax/*.csv
+        png: output/3-report/report_rsv_2025_26_baseline_vax/*.png
+        txt: output/3-report/report_rsv_2025_26_baseline_vax/*.txt
 
   report_burden_rsv_2025_26:
     run: r:v3 analysis/3-report/report_cohort.R rsv_2025_26 burden
@@ -546,10 +546,10 @@ actions:
         csv: output/3-report/report_rsv_2025_26_burden/*.csv
         txt: output/3-report/report_rsv_2025_26_burden/*.txt
 
-  report_subgroups_rsv_2025_26:
-    run: r:v3 analysis/3-report/report_cohort.R rsv_2025_26 subgroups
+  report_burden_subsets_rsv_2025_26:
+    run: r:v3 analysis/3-report/report_cohort.R rsv_2025_26 burden_subsets
     needs: [prepare_rsv_2025_26]
     outputs:
       moderately_sensitive:
-        csv: output/3-report/report_rsv_2025_26_subgroups/*.csv
-        txt: output/3-report/report_rsv_2025_26_subgroups/*.txt
+        csv: output/3-report/report_rsv_2025_26_burden_subsets/*.csv
+        txt: output/3-report/report_rsv_2025_26_burden_subsets/*.txt
